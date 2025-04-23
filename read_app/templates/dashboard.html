@@ -1,0 +1,116 @@
+
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container p-6 max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-6 text-blue-800">👋 Welcome to DyslexiMate</h2>
+    
+    <form id="convertForm">
+        <label for="inputText" class="block text-lg font-semibold text-gray-700 mb-2">Enter Text:</label>
+        <textarea id="inputText" rows="6" class="w-full p-3 border rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" placeholder="Paste or write here..."></textarea>
+        
+        <div class="flex flex-wrap gap-4 mb-4">
+            <button type="button" onclick="convertText()" class="bg-blue-600 hover:bg-blue-800 text-white px-5 py-2 rounded shadow">🎨 Convert</button>
+            <button type="button" onclick="readAloud()" class="bg-green-600 hover:bg-green-800 text-white px-5 py-2 rounded shadow">🔊 Read Aloud</button>
+            <button type="button" onclick="downloadPDF()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded shadow">📄 Download</button>
+        </div>
+    </form>
+
+    <div id="outputSection" class="bg-gray-100 p-4 rounded shadow min-h-[100px] font-dyslexic text-xl text-gray-900"></div>
+</div>
+
+<style>
+    .font-dyslexic {
+        font-family: 'OpenDyslexic', sans-serif;
+        line-height: 1.7;
+        letter-spacing: 0.08em;
+    }
+</style>
+<script src="{% static '/emoji/emoji.json' %}"></script>
+<script>
+    
+    {% comment %} function convertText() {
+        let text = document.getElementById('inputText').value;
+    
+        // Custom word-to-emoji replacements
+        const emojiMap = {
+            '\\bschool\\b': '🏫 school',
+            '\\bhappy\\b': '😊 happy',
+            '\\brain\\b': '🌧️ rain',
+            '\\bbook\\b': '📖 book',
+            '\\bfood\\b': '🍽️ food',
+            '\\bcat\\b': '🐱 cat',
+            '\\bdog\\b': '🐶 dog',
+            '\\bcar\\b': '🚗 car',
+            '\\bcomputer\\b': '💻 computer',
+        };
+    
+        for (let pattern in emojiMap) {
+            let regex = new RegExp(pattern, 'gi');
+            text = text.replace(regex, emojiMap[pattern]);
+        }
+    
+        // Add spacing and line breaks for readability
+        //text = text.replace(/([.?!])\s*/g, "$1\n\n");
+    
+        // Replace common symbols
+        text = text.replace(/,/g, '  •  ');
+        
+        const styled = `<div style="white-space: pre-wrap;" class="text-xl font-[OpenDyslexic] text-gray-800 leading-relaxed">${text}</div>`;
+        document.getElementById('outputSection').innerHTML = styled;
+    }     {% endcomment %}
+
+    let emojiList = [];
+
+    async function loadEmojis() {
+        const response = await fetch('/static/emoji/emoji.json'); 
+        emojiList = await response.json();
+    }
+
+    // Call it when page loads
+    window.onload = async () => {
+        await loadEmojis();
+        console.log("Emojis loaded!", emojiList.length);
+    }
+
+    function convertText() {
+        let text = document.getElementById('inputText').value;
+        
+        // Example words to match against emoji names
+        let words = text.split(/\s+/);
+    
+        words = words.map(word => {
+            let cleanWord = word.toLowerCase().replace(/[^a-z]/gi, '');
+            for (let emoji of emojiList) {
+                if (emoji.name.toLowerCase().includes(cleanWord)) {
+                    return `${emoji.char} ${word}`;
+                }
+            }
+            return word;
+        });
+    
+        document.getElementById('outputSection').innerText = words.join(' ');
+    }    
+
+    function readAloud() {
+        let text = document.getElementById('outputSection').innerText;
+        if (!text) {
+            alert("Please convert text first!");
+            return;
+        }
+        let utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.speak(utterance);
+    }
+
+    function downloadPDF() {
+        let text = document.getElementById('outputSection').innerText;
+        if (!text) {
+            alert("Please convert text first!");
+            return;
+        }
+        alert("Coming soon! 🔧 Will use html2pdf.js or Django backend PDF generator.");
+    }
+</script>
+{% endblock %}

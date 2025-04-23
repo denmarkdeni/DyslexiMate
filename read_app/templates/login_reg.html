@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DyslexiMate Auth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .wrapper {
+      width: 30%;
+      height: 80%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .form-container {
+      position: absolute;
+      width: 100%;
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .form-container.login {
+      transform: translateX(0%);
+    }
+
+    .wrapper.register-mode .form-container.login {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .form-container.register {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .wrapper.register-mode .form-container.register {
+      transform: translateX(0%);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      width: 85%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0077b6;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .submit-btn {
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #023e8a;
+    }
+
+    .toggle-btn {
+      margin-top: 10px;
+      background: transparent;
+      border: none;
+      color: #0077b6;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .toggle-btn:hover {
+      color: #023e8a;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper" id="formWrapper">
+    <div class="form-container login">
+      <form method="POST">
+        {% csrf_token %}
+        <h2>🔐 Login</h2>
+        {% for field in login_form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+              <small style="color:red;">{{ field.errors.0 }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="submit-btn" name="login">Login</button>
+        <button type="button" class="toggle-btn" onclick="toggleForm()">New user? Register here</button>
+      </form>
+    </div>
+
+    <div class="form-container register">
+      <form method="POST">
+        {% csrf_token %}
+        <h2>📝 Register</h2>
+        {% for field in reg_form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+              <small style="color:red;">{{ field.errors.0 }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="submit-btn" name="register">Register</button>
+        <button type="button" class="toggle-btn" onclick="toggleForm()">Already have an account? Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleForm() {
+      document.getElementById('formWrapper').classList.toggle('register-mode');
+    }
+  </script>
+</body>
+</html>
