@@ -26,41 +26,18 @@
         font-family: 'OpenDyslexic', sans-serif;
         line-height: 1.7;
         letter-spacing: 0.08em;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .page-break {
+        page-break-before: always;
     }
 </style>
+
 <script src="{% static '/emoji/emoji.json' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <script>
-    
-    {% comment %} function convertText() {
-        let text = document.getElementById('inputText').value;
-    
-        // Custom word-to-emoji replacements
-        const emojiMap = {
-            '\\bschool\\b': '🏫 school',
-            '\\bhappy\\b': '😊 happy',
-            '\\brain\\b': '🌧️ rain',
-            '\\bbook\\b': '📖 book',
-            '\\bfood\\b': '🍽️ food',
-            '\\bcat\\b': '🐱 cat',
-            '\\bdog\\b': '🐶 dog',
-            '\\bcar\\b': '🚗 car',
-            '\\bcomputer\\b': '💻 computer',
-        };
-    
-        for (let pattern in emojiMap) {
-            let regex = new RegExp(pattern, 'gi');
-            text = text.replace(regex, emojiMap[pattern]);
-        }
-    
-        // Add spacing and line breaks for readability
-        //text = text.replace(/([.?!])\s*/g, "$1\n\n");
-    
-        // Replace common symbols
-        text = text.replace(/,/g, '  •  ');
-        
-        const styled = `<div style="white-space: pre-wrap;" class="text-xl font-[OpenDyslexic] text-gray-800 leading-relaxed">${text}</div>`;
-        document.getElementById('outputSection').innerHTML = styled;
-    }     {% endcomment %}
 
     let emojiList = [];
 
@@ -105,12 +82,33 @@
     }
 
     function downloadPDF() {
-        let text = document.getElementById('outputSection').innerText;
-        if (!text) {
+        let output = document.getElementById('outputSection');
+        if (!output.innerText) {
             alert("Please convert text first!");
             return;
         }
-        alert("Coming soon! 🔧 Will use html2pdf.js or Django backend PDF generator.");
+
+        const opt = {
+            margin:       0.5,
+            filename:     'dysleximate_output.pdf',
+            image:        { type: 'pdf', quality: 0.98 },
+            html2canvas:  {
+                scale: 2,
+                useCORS: true
+            },
+            jsPDF: {
+                unit: 'in',
+                format: 'a4',
+                orientation: 'portrait'
+            },
+            pagebreak: {
+                mode: ['css', 'legacy'],
+                before: '.page-break'
+            }
+        };
+    
+        html2pdf().set(opt).from(output).save();
+        alert("PDF downloaded successfully!");
     }
 </script>
 {% endblock %}
