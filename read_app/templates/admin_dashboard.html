@@ -1,0 +1,55 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-container p-6 max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-6 text-green-900">👋 Welcome to DyslexiMate</h2>
+</div>
+
+<div class="mt-4">
+    <h2 class="font-bold text-2xl text-green-600" >System Overview</h2><br>
+    <div class="card">
+        <div class="chart-container" >
+        <canvas id="casesChart"></canvas>
+    </div>
+</div>
+
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    // Chart.js script
+    const studentsCount = {{ studentsCount|default:0 }};
+    const instructorsCount = {{ instructorsCount|default:0 }};
+    const publishersCount = {{ publishersCount|default:0 }};
+    const usersCount = {{ usersCount|default:0 }};
+
+    const ctx = document.getElementById('casesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',  // Changed to Bar Chart
+        data: {
+        labels: ['Total Users', 'Students', 'Instructors', 'Publishers'],
+        datasets: [{
+            label: 'System Metrics',
+            data: [usersCount, studentsCount, instructorsCount, publishersCount],
+            backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', 'green'],
+            borderWidth: 1
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+            beginAtZero: true
+            }
+        }
+        }
+    });
+
+</script>
+
+{% endblock %}

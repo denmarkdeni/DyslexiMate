@@ -23,5 +23,16 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('auth/', views.login_register, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('dashboard/', views.dashboard, name='dashboard'),
+
+    path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('instructor-dashboard/', views.instructor_dashboard, name='instructor_dashboard'),
+    path('publisher-dashboard/', views.publisher_dashboard, name='publisher_dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+
+    path('admin-dashboard/students/', views.manage_students, name='manage_students'),
+    path('admin-dashboard/publishers/', views.manage_publishers, name='manage_publishers'),
+    path('admin-dashboard/instructors/', views.manage_instructors, name='manage_instructors'),
+
+    path('admin-dashboard/edit-student/<int:user_id>/', views.edit_student, name='edit_student'),
+    path('admin-dashboard/delete-student/<int:user_id>/', views.delete_student, name='delete_student'),
 ]

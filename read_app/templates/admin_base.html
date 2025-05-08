@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DyslexiMate</title>
+    <title>Admin-DyslexiMate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Tailwind CDN -->
@@ -26,19 +26,23 @@
             opacity: 0;
             overflow: hidden;
         }
-        
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
     </style>
 </head>
 <body class="flex min-h-screen bg-gray-100">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar w-64 bg-blue-900 text-white p-5 flex flex-col gap-4 shadow-lg">
+    <aside id="sidebar" class="sidebar w-64 bg-green-900 text-white p-5 flex flex-col gap-4 shadow-lg">
         <h2 class="text-2xl font-bold text-white mb-6">DyslexiMate 🧠</h2>
-        <a href="{% url 'student_dashboard' %}" class="hover:bg-blue-700 p-2 rounded">🏠 Dashboard</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">🎨 Format Text</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">🔊 TTS Reader</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">📄 Export</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">⚙️ Settings</a>
+        <a href="{% url 'admin_dashboard' %}" class="hover:bg-blue-700 p-2 rounded">🏠 Dashboard</a>
+        <a href="#" class="hover:bg-blue-700 p-2 rounded"> 1️⃣ Publishers</a>
+        <a href="#" class="hover:bg-blue-700 p-2 rounded"> 2️⃣ Instructors</a>
+        <a href="{% url 'manage_students' %}" class="hover:bg-blue-700 p-2 rounded"> 3️⃣ Students</a>
         <a href="{% url 'logout' %}" class="hover:bg-red-700 p-2 rounded mt-auto text-red-300">🚪 Logout</a>
     </aside>
 
@@ -47,8 +51,8 @@
         <!-- Header -->
         <header class="bg-white shadow p-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <button onclick="toggleSidebar()" class="text-blue-700 text-xl ">&#9776;</button>
-                <h1 class="text-2xl font-bold text-blue-800">Welcome to DyslexiMate</h1>
+                <button onclick="toggleSidebar()" class="text-green-700 text-xl ">&#9776;</button>
+                <h1 class="text-2xl font-bold text-green-800">Welcome Admin : {{ request.user.username }}</h1>
             </div>
             <div>
                 <span class="text-gray-600">👋 Hi, {{ request.user.username }}</span>
@@ -58,7 +62,6 @@
         <!-- Page Content -->
         <main class="p-6">
             {% block content %}
-            <!-- Page content will appear here -->
             {% endblock %}
         </main>
     </div>
@@ -69,6 +72,5 @@
             sidebar.classList.toggle('sidebar-closed');
         }
     </script>
-
 </body>
 </html>

@@ -33,7 +33,16 @@ def login_register(request):
                 )
                 if user:
                     login(request, user)
-                    return redirect('dashboard')
+                    if user.is_authenticated:
+                        return redirect('admin_dashboard')
+                    elif user.account.role == 'student':
+                        return redirect('student_dashboard')
+                    elif user.account.role == 'publisher':
+                        return redirect('publisher_dashboard')
+                    elif user.account.role == 'instructor':
+                        return redirect('instructor_dashboard')
+                    else:
+                        return redirect('student_dashboard')
     else:
         reg_form = RegisterForm()
         login_form = LoginForm()
@@ -47,9 +56,73 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def dashboard(request):
+def student_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'dashboard.html')
+        return render(request, 'student_dashboard.html')
     else:
         return redirect('login')
 
+def publisher_dashboard(request):
+    if request.user.is_authenticated:
+        return render(request, 'publisher_dashboard.html')
+    else:
+        return redirect('login')
+
+def instructor_dashboard(request):
+    if request.user.is_authenticated:
+        return render(request, 'instructor_dashboard.html')
+    else:
+        return redirect('login')
+
+def admin_dashboard(request):
+    if request.user.is_authenticated:
+        studentsCount = Account.objects.filter(role='student').count()
+        publishersCount = Account.objects.filter(role='publisher').count()
+        instructorsCount = Account.objects.filter(role='instructor').count()
+        usersCount = Account.objects.all().count()  
+        return render(request, 'admin_dashboard.html',{'studentsCount': studentsCount, 'publishersCount': publishersCount, 'instructorsCount': instructorsCount, 'usersCount': usersCount})
+    else:
+        return redirect('login')
+
+def manage_students(request):
+    if request.user.is_authenticated:
+        students = Account.objects.filter(role='student')
+        return render(request, 'manage_students.html', {'students': students})
+    else:
+        return redirect('login')
+    
+def manage_publishers(request):
+    if request.user.is_authenticated:
+        publishers = Account.objects.filter(role='publisher')
+        return render(request, 'manage_publishers.html', {'publishers': publishers})
+    else:
+        return redirect('login')
+    
+def manage_instructors(request):
+    if request.user.is_authenticated:
+        instructors = Account.objects.filter(role='instructor')
+        return render(request, 'manage_instructors.html', {'instructors': instructors})
+    else:
+        return redirect('login')
+    
+def edit_student(request, user_id):
+    if request.user.is_authenticated:
+        student = User.objects.get(id=user_id)
+        if request.method == 'POST':
+            form = RegisterForm(request.POST, instance=student.user)
+            if form.is_valid():
+                form.save()
+                return redirect('manage_students')
+        else:
+            form = RegisterForm(instance=student.user)
+        return render(request, 'edit_student.html', {'form': form})
+    else:
+        return redirect('login')
+    
+def delete_student(request, user_id):
+    if request.user.is_authenticated:
+        student = User.objects.get(id=user_id)
+        student.delete()
+        return redirect('manage_students')
+    else:
+        return redirect('login')
