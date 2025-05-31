@@ -33,7 +33,7 @@ def login_register(request):
                 )
                 if user:
                     login(request, user)
-                    if user.is_authenticated:
+                    if user.is_superuser:
                         return redirect('admin_dashboard')
                     elif user.account.role == 'student':
                         return redirect('student_dashboard')
@@ -58,19 +58,19 @@ def logout_view(request):
 
 def student_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'student_dashboard.html')
+        return render(request, 'dashboards/student_dashboard.html')
     else:
         return redirect('login')
 
 def publisher_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'publisher_dashboard.html')
+        return render(request, 'dashboards/publisher_dashboard.html')
     else:
         return redirect('login')
 
 def instructor_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'instructor_dashboard.html')
+        return render(request, 'dashboards/instructor_dashboard.html')
     else:
         return redirect('login')
 
@@ -80,28 +80,28 @@ def admin_dashboard(request):
         publishersCount = Account.objects.filter(role='publisher').count()
         instructorsCount = Account.objects.filter(role='instructor').count()
         usersCount = Account.objects.all().count()  
-        return render(request, 'admin_dashboard.html',{'studentsCount': studentsCount, 'publishersCount': publishersCount, 'instructorsCount': instructorsCount, 'usersCount': usersCount})
+        return render(request, 'dashboards/admin_dashboard.html',{'studentsCount': studentsCount, 'publishersCount': publishersCount, 'instructorsCount': instructorsCount, 'usersCount': usersCount})
     else:
         return redirect('login')
 
 def manage_students(request):
     if request.user.is_authenticated:
         students = Account.objects.filter(role='student')
-        return render(request, 'manage_students.html', {'students': students})
+        return render(request, 'admin/manage_students.html', {'students': students})
     else:
         return redirect('login')
     
 def manage_publishers(request):
     if request.user.is_authenticated:
         publishers = Account.objects.filter(role='publisher')
-        return render(request, 'manage_publishers.html', {'publishers': publishers})
+        return render(request, 'admin/manage_publishers.html', {'publishers': publishers})
     else:
         return redirect('login')
     
 def manage_instructors(request):
     if request.user.is_authenticated:
         instructors = Account.objects.filter(role='instructor')
-        return render(request, 'manage_instructors.html', {'instructors': instructors})
+        return render(request, 'admin/manage_instructors.html', {'instructors': instructors})
     else:
         return redirect('login')
     
@@ -114,7 +114,7 @@ def edit_student(request, user_id):
                 form.save()
                 return redirect('manage_students')
         else:
-            form = RegisterForm(instance=student.user)
+            form = RegisterForm(instance=student)
         return render(request, 'edit_student.html', {'form': form})
     else:
         return redirect('login')
