@@ -126,3 +126,58 @@ def delete_student(request, user_id):
         return redirect('manage_students')
     else:
         return redirect('login')
+
+import fitz  # PyMuPDF
+from io import BytesIO
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os
+from django.conf import settings
+
+def convert_pdf(request):
+    if request.method == 'POST':
+        if request.FILES.get('pdf_file'):
+            pdf_file = request.FILES['pdf_file']
+
+            # Step 1: Extract text from PDF
+            doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+            extracted_text = ""
+            for page in doc:
+                extracted_text += page.get_text()
+
+            # Step 2: Create a new dyslexia-friendly PDF
+            buffer = BytesIO()
+            c = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4
+
+            # Step 3: Register OpenDyslexic font (provide full path)
+            font_path = os.path.join(settings.BASE_DIR, 'read_app', 'static', 'fonts', 'open-dyslexic.ttf')
+            
+            if os.path.exists(font_path):
+                pdfmetrics.registerFont(TTFont('OpenDyslexic', font_path))
+                c.setFont("OpenDyslexic", 12)
+            else:
+                c.setFont("Helvetica-Bold", 12)
+
+            # Step 4: Write text
+            y = height - 40
+            for line in extracted_text.split('\n'):
+                if y < 50:
+                    c.showPage()
+                    y = height - 40
+                    c.setFont("OpenDyslexic", 12)
+                c.drawString(40, y, line)
+                y -= 18
+
+            c.save()
+            buffer.seek(0)
+
+            # Step 5: Return the PDF as response
+            return HttpResponse(buffer, content_type='application/pdf')
+
+    return render(request, 'features/convert_pdf.html')
+

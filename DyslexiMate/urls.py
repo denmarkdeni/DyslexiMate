@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from read_app import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,4 +37,10 @@ urlpatterns = [
 
     path('admin-dashboard/edit-student/<int:user_id>/', views.edit_student, name='edit_student'),
     path('admin-dashboard/delete-student/<int:user_id>/', views.delete_student, name='delete_student'),
+
+    path('convert-pdf-to-dyslexic/', views.convert_pdf, name='convert_pdf'),
+
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
