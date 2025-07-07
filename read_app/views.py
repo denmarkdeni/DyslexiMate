@@ -1,8 +1,21 @@
+from django.http import HttpResponse
+from django.conf import settings
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegisterForm, LoginForm
-from .models import Account
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
+from django import forms
+from .forms import RegisterForm, LoginForm
+from .models import Account, StudentProfile, InstructorProfile, PublisherProfile
+from .models import Account
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os, fitz  # PyMuPDF 
 
 def home(request):
     return render(request, 'home.html')
@@ -22,6 +35,7 @@ def login_register(request):
                     user=user,
                     role=reg_form.cleaned_data['role']
                 )
+                messages.success(request, 'Registration successful.')
                 return redirect('login')
         elif 'login' in request.POST:
             login_form = LoginForm(request.POST)
@@ -33,6 +47,7 @@ def login_register(request):
                 )
                 if user:
                     login(request, user)
+                    messages.success(request, 'Login successful.')
                     if user.is_superuser:
                         return redirect('admin_dashboard')
                     elif user.account.role == 'student':
@@ -43,6 +58,9 @@ def login_register(request):
                         return redirect('instructor_dashboard')
                     else:
                         return redirect('student_dashboard')
+                else:
+                    messages.error(request, 'Invalid username or password.')
+                    return redirect('login')
     else:
         reg_form = RegisterForm()
         login_form = LoginForm()
@@ -54,6 +72,7 @@ def login_register(request):
 
 def logout_view(request):
     logout(request)
+    messages.success(request, 'Logout successful.')
     return redirect('login')
 
 def student_dashboard(request):
@@ -112,6 +131,7 @@ def edit_student(request, user_id):
             form = RegisterForm(request.POST, instance=student.user)
             if form.is_valid():
                 form.save()
+                messages.success(request, 'Updated.')
                 return redirect('manage_students')
         else:
             form = RegisterForm(instance=student)
@@ -123,20 +143,10 @@ def delete_student(request, user_id):
     if request.user.is_authenticated:
         student = User.objects.get(id=user_id)
         student.delete()
+        messages.success(request, 'Deleted successfully.')
         return redirect('manage_students')
     else:
         return redirect('login')
-
-import fitz  # PyMuPDF
-from io import BytesIO
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import os
-from django.conf import settings
 
 def convert_pdf(request):
     if request.method == 'POST':
@@ -181,3 +191,128 @@ def convert_pdf(request):
 
     return render(request, 'features/convert_pdf.html')
 
+def convert_text(request):
+    if request.user.is_authenticated:
+        return render(request, 'features/convert_text.html')
+    else:
+        return redirect('login')
+
+@login_required
+def student_profile(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    profile = StudentProfile.objects.filter(account=account).first()
+
+    if request.method == 'POST':
+        profile_picture = request.FILES.get('profile_picture')
+        name = request.POST.get('name')
+        age = request.POST.get('age')
+        education_level = request.POST.get('education_level')
+        school = request.POST.get('school')
+
+        if profile_picture:
+            account.profile_picture = profile_picture
+            account.save()
+
+        if name and age and education_level:
+            if profile:
+                profile.name = name
+                profile.age = int(age)
+                profile.education_level = education_level
+                profile.school = school or ''
+                profile.save()
+            else:
+                StudentProfile.objects.create(
+                    account=account,
+                    name=name,
+                    age=int(age),
+                    education_level=education_level,
+                    school=school or ''
+                )
+        messages.success(request,"Profile Updated")
+        return redirect('student_profile')
+
+    return render(request, 'profiles/student_profile.html', {'account': account, 'profile': profile})
+
+@login_required
+def instructor_profile(request):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    profile = InstructorProfile.objects.filter(account=account).first()
+
+    if request.method == 'POST':
+        profile_picture = request.FILES.get('profile_picture')
+        name = request.POST.get('name')
+        qualification = request.POST.get('qualification')
+        years_of_experience = request.POST.get('years_of_experience')
+        specialization = request.POST.get('specialization')
+
+        if profile_picture:
+            account.profile_picture = profile_picture
+            account.save()
+
+        if name and qualification and years_of_experience:
+            if profile:
+                profile.name = name
+                profile.qualification = qualification
+                profile.years_of_experience = int(years_of_experience)
+                profile.specialization = specialization or ''
+                profile.save()
+            else:
+                InstructorProfile.objects.create(
+                    account=account,
+                    name=name,
+                    qualification=qualification,
+                    years_of_experience=int(years_of_experience),
+                    specialization=specialization or ''
+                )
+        messages.success(request,"Profile Updated")
+        return redirect('instructor_profile')
+
+    return render(request, 'profiles/instructor_profile.html', {'account': account, 'profile': profile})
+
+@login_required
+def publisher_profile(request):
+    try:
+        account = Account.objects.get(user=request.user, role='publisher')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    profile = PublisherProfile.objects.filter(account=account).first()
+
+    if request.method == 'POST':
+        profile_picture = request.FILES.get('profile_picture')
+        name = request.POST.get('name')
+        company_name = request.POST.get('company_name')
+        work_details = request.POST.get('work_details')
+        website = request.POST.get('website')
+
+        if profile_picture:
+            account.profile_picture = profile_picture
+            account.save()
+
+        if name and company_name and work_details:
+            if profile:
+                profile.name = name
+                profile.company_name = company_name
+                profile.work_details = work_details
+                profile.website = website or ''
+                profile.save()
+            else:
+                PublisherProfile.objects.create(
+                    account=account,
+                    name=name,
+                    company_name=company_name,
+                    work_details=work_details,
+                    website=website or ''
+                )
+        messages.success(request,"Profile Updated")
+        return redirect('publisher_profile')
+
+    return render(request, 'profiles/publisher_profile.html', {'account': account, 'profile': profile})

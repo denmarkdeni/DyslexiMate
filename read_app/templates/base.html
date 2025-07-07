@@ -1,74 +1,283 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 <head>
-    <meta charset="UTF-8">
-    <title>DyslexiMate</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DyslexiMate - Dashboard</title>
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind is included -->
+  <link rel="stylesheet" href="/static/dash/css/main.css?v=1628755089081">
 
-    <!-- OpenDyslexic Font -->
-    <link href="https://fonts.cdnfonts.com/css/open-dyslexic" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"/>
+  <link rel="mask-icon" href="safari-pinned-tab.svg" color="#00b4b6"/>
 
-    <style>
-        body {
-            font-family: 'OpenDyslexic', sans-serif;
-        }
+  <meta name="description" content="dashboard">
 
-        .sidebar {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .sidebar-closed {
-            width: 0 !important;
-            padding: 0 !important;
-            opacity: 0;
-            overflow: hidden;
-        }
-        
-    </style>
 </head>
-<body class="flex min-h-screen bg-gray-100">
+<body>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar w-64 bg-blue-900 text-white p-5 flex flex-col gap-4 shadow-lg">
-        <h2 class="text-2xl font-bold text-white mb-6">DyslexiMate 🧠</h2>
-        <a href="{% url 'student_dashboard' %}" class="hover:bg-blue-700 p-2 rounded">🏠 Dashboard</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">🎨 Format Text</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">🔊 TTS Reader</a>
-        <a href="{% url 'convert_pdf' %}" class="hover:bg-blue-700 p-2 rounded">📄 Convert PDF</a>
-        <a href="#" class="hover:bg-blue-700 p-2 rounded">⚙️ Settings</a>
-        <a href="{% url 'logout' %}" class="hover:bg-red-700 p-2 rounded mt-auto text-red-300">🚪 Logout</a>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col">
-        <!-- Header -->
-        <header class="bg-white shadow p-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <button onclick="toggleSidebar()" class="text-blue-700 text-xl ">&#9776;</button>
-                <h1 class="text-2xl font-bold text-blue-800">Welcome to DyslexiMate</h1>
-            </div>
-            <div>
-                <span class="text-gray-600">👋 Hi, {{ request.user.username }}</span>
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <main class="p-6">
-            {% block content %}
-            <!-- Page content will appear here -->
-            {% endblock %}
-        </main>
+     <!-- POP up message -->
+    <div id="popup-message" class="popup-message" style="display: none">
+      <div class="popup-content">
+        <span id="popup-text"></span>
+      </div>
     </div>
 
+    <style>
+      .popup-message {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+
+      .popup-content {
+        background-color: rgba(102, 255, 0, 0.5);
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+
+      .popup-content.error {
+        background-color: rgba(255, 26, 1, 0.5);
+      }
+    </style>
+
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('sidebar-closed');
-        }
+      function showPopup(message, isError = false) {
+          const popup = document.getElementById('popup-message');
+          const popupText = document.getElementById('popup-text');
+          const popupContent = popup.querySelector('.popup-content');
+
+          popupText.textContent = message;
+          popupContent.classList.toggle('error', isError);
+
+          popup.style.display = 'block';
+          popup.style.opacity = '1';
+
+          setTimeout(() => {
+              popup.style.opacity = '0';
+              setTimeout(() => {
+                  popup.style.display = 'none';
+              }, 500);
+          }, 3000);
+      }
+
+      // Automatically show Django messages
+      document.addEventListener('DOMContentLoaded', () => {
+          {% for message in messages %}
+              showPopup("{{ message }}", {% if message.tags == 'error' %}true{% else %}false{% endif %});
+          {% endfor %}
+      });
     </script>
+
+<div id="app">
+
+<nav id="navbar-main" class="navbar is-fixed-top">
+  <div class="navbar-brand">
+    <a class="navbar-item mobile-aside-button">
+      <span class="icon"><i class="mdi mdi-forwardburger mdi-24px"></i></span>
+    </a>
+    <!-- <div class="navbar-item">
+      <div class="control"><input placeholder="Search everywhere..." class="input"></div>
+    </div> -->
+  </div>
+  <div class="navbar-brand is-right">
+    <a class="navbar-item --jb-navbar-menu-toggle" data-target="navbar-menu">
+      <span class="icon"><i class="mdi mdi-dots-vertical mdi-24px"></i></span>
+    </a>
+  </div>
+  <div class="navbar-menu" id="navbar-menu">
+    <div class="navbar-end">
+      
+      <div class="navbar-item dropdown has-divider has-user-avatar">
+        <a class="navbar-link">
+          <div class="user-avatar">
+            <img src="{{ user.account.profile_picture.url }}" alt="John Doe" class="rounded-full">
+          </div>
+          <div class="is-user-name"><span>John Doe</span></div>
+          <span class="icon"><i class="mdi mdi-chevron-down"></i></span>
+        </a>
+        <div class="navbar-dropdown">
+          <a href="#" class="navbar-item">
+            <span class="icon"><i class="mdi mdi-account"></i></span>
+            <span>My Profile</span>
+          </a>
+          {% comment %} <a class="navbar-item">
+            <span class="icon"><i class="mdi mdi-settings"></i></span>
+            <span>Settings</span>
+          </a> {% endcomment %}
+          <a class="navbar-item">
+            <span class="icon"><i class="mdi mdi-email"></i></span>
+            <span>Messages</span>
+          </a>
+          <hr class="navbar-divider">
+          <a class="navbar-item" href={% url 'logout' %}>
+            <span class="icon"><i class="mdi mdi-logout"></i></span>
+            <span>Log Out</span>
+          </a>
+        </div>
+      </div>
+      
+      <a title="Log out" class="navbar-item desktop-icon-only" href={% url 'logout' %}>
+        <span class="icon"><i class="mdi mdi-logout"></i></span>
+        <span>Log out</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<aside class="aside is-placed-left is-expanded">
+  <div class="aside-tools">
+    <div>
+      <b class="font-black">{{ user.account.role|default:"admin"|title }}
+      </b>
+    </div>
+  </div>
+  <div class="menu is-menu-main">
+    <p class="menu-label">General</p>
+    <ul class="menu-list">
+
+    {% if user.is_superuser %}
+
+      <li class="">
+        <a href="{% url 'admin_dashboard' %}">
+          <span class="icon"><i class="mdi mdi-desktop-mac"></i></span>
+          <span class="menu-item-label">Dashboard</span>
+        </a>
+      </li>
+    
+      <p class="menu-label">Management</p>
+      <li class="">
+        <a href="index.html">
+          <span class="icon"><i class="mdi mdi-account-cog"></i></span>
+          <span class="menu-item-label">Users</span>
+        </a>
+      </li>
+    
+    {% elif user.account.role == 'instructor' %}
+
+      <li class="">
+        <a href="{% url 'instructor_dashboard' %}">
+          <span class="icon"><i class="mdi mdi-desktop-mac"></i></span>
+          <span class="menu-item-label">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'instructor_profile' %}">
+          <span class="icon"><i class="mdi mdi-account-circle"></i></span>
+          <span class="menu-item-label">Profile</span>
+        </a>
+      </li>
+
+    {% elif user.account.role == 'publisher' %}
+
+      <li class="">
+        <a href="{% url 'publisher_dashboard' %}">
+          <span class="icon"><i class="mdi mdi-desktop-mac"></i></span>
+          <span class="menu-item-label">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'publisher_profile' %}">
+          <span class="icon"><i class="mdi mdi-account-circle"></i></span>
+          <span class="menu-item-label">Profile</span>
+        </a>
+      </li>
+
+    {% elif user.account.role == 'student' %}
+
+      <li class="">
+        <a href="{% url 'student_dashboard' %}">
+          <span class="icon"><i class="mdi mdi-desktop-mac"></i></span>
+          <span class="menu-item-label">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'student_profile' %}">
+          <span class="icon"><i class="mdi mdi-account-circle"></i></span>
+          <span class="menu-item-label">Profile</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Conversion</p>
+
+      <li class="">
+        <a href="{% url 'convert_text' %}">
+          <span class="icon"><i class="mdi mdi-card-text"></i></span>
+          <span class="menu-item-label">Dyslexic Text</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'convert_pdf' %}">
+          <span class="icon"><i class="mdi mdi-file-pdf"></i></span>
+          <span class="menu-item-label">Dyslexic PDF</span>
+        </a>
+      </li>
+
+    {% endif %}
+
+    </ul>
+    <p class="menu-label">Examples</p>
+    <ul class="menu-list">
+      <li class="--set-active-tables-html">
+        <a href="tables.html">
+          <span class="icon"><i class="mdi mdi-table"></i></span>
+          <span class="menu-item-label">Tables</span>
+        </a>
+      </li>
+      <li class="--set-active-forms-html">
+        <a href="forms.html">
+          <span class="icon"><i class="mdi mdi-square-edit-outline"></i></span>
+          <span class="menu-item-label">Forms</span>
+        </a>
+      </li>
+      <li class="">
+        <a href="{% url 'student_profile' %}">
+          <span class="icon"><i class="mdi mdi-account-circle"></i></span>
+          <span class="menu-item-label">Profile</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'logout' %}">
+          <span class="icon"><i class="mdi mdi-lock"></i></span>
+          <span class="menu-item-label">Login</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
+
+{% block content %}
+
+{% endblock %}
+
+<section class="section main-section">
+</section>
+
+</div>
+
+<!-- Scripts below are for demo only -->
+<script type="text/javascript" src="/static/dash/js/main.min.js?v=1628755089081"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<script type="text/javascript" src="/static/dash/js/chart.sample.min.js"></script>
+
+
+<!-- Icons below are for demo only. Feel free to use any icon pack. Docs: https://bulma.io/documentation/elements/icon/ -->
+<link rel="stylesheet" href="https://cdn.materialdesignicons.com/4.9.95/css/materialdesignicons.min.css">
 
 </body>
 </html>

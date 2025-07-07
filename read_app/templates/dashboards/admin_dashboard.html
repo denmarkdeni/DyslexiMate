@@ -1,12 +1,25 @@
-{% extends "admin_base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 
-<div class="dashboard-container p-6 max-w-4xl mx-auto">
-    <h2 class="text-3xl font-bold text-center mb-6 text-green-900">👋 Welcome to DyslexiMate</h2>
-</div>
+<section class="is-title-bar">
+    <div class="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+        <ul>
+        <li>Admin</li>
+        <li>Dashboard</li>
+        </ul>
+    </div>
+</section>
 
-<div class="mt-4">
+<section class="is-hero-bar">
+    <div class="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+        <h1 class="title">
+        👋 Welcome to DyslexiMate
+        </h1>
+    </div>
+</section>
+
+<div class="pt-0">
     <h2 class="font-bold text-2xl text-green-600" >System Overview</h2><br>
     <div class="card">
         <div class="chart-container" >

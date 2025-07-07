@@ -49,7 +49,7 @@ https://templatemo.com/tm-590-topic-listing
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('../fonts/OpenDyslexic-Bold.woff') format('woff');
+  src: url('/static/fonts/OpenDyslexic-Bold.woff') format('woff');
   font-weight: bold;
 }
 

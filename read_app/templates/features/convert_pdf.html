@@ -4,37 +4,52 @@
 
 {% block content %}
 
-    <form method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        {% csrf_token %}
-        <h2 class="text-2xl font-bold mb-4">Convert PDF to Dyslexic Format</h2>
+<section class="is-title-bar">
+    <div class="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+        <ul>
+        <li>Instructor</li>
+        <li>Dashboard</li>
+        </ul>
+    </div>
+</section>
 
-        {% if form.errors %}
-            <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
-                <strong>Error:</strong> Please correct the errors below.
+<section class="is-hero-bar">
+    <div class="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+        <h1 class="title">
+        Convert PDF to Dyslexic
+        </h1>
+    </div>
+</section>
+
+<section class="section main-section">
+    <div class="card mb-6">
+        <div class="card-content">
+            <div class="field">
+                 <form method="post" enctype="multipart/form-data" >
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div>
+                            <strong>Error:</strong> Please correct the errors below.
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label for="pdf_file">Upload PDF File:</label>
+                        <input type="file" name="pdf_file" accept=".pdf" class="button blue">
+                        {% if form.pdf_file.errors %}
+                            <div>
+                                {{ form.pdf_file.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="button green">Convert</button>
+                </form>
             </div>
-        {% endif %}
-
-        <div class="mb-4">
-            <label for="pdf_file" class="block text-gray-700 mb-2">Upload PDF File:</label>
-            <input type="file" name="pdf_file" accept=".pdf" class="border border-gray-300 p-2 w-full rounded">
-            {% if form.pdf_file.errors %}
-                <div class="text-red-600 mt-2">
-                    {{ form.pdf_file.errors }}
-                </div>
-            {% endif %}
         </div>
-
-        <button type="subm it" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Convert</button>
-    </form><br>
-
-    {% comment %} <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-xl font-semibold mb-2">Converted PDF:</h3>
-        {% if converted_pdf %}
-            <a href="{{ converted_pdf.url }}" class="text-blue-600 hover:underline">Download Converted PDF</a>
-        {% else %}
-            <p class="text-gray-600">No converted PDF available yet.</p>
-        {% endif %}
-    </div> {% endcomment %}
+    </div>
+</section>
     
 
 {% endblock %}

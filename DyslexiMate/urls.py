@@ -31,6 +31,10 @@ urlpatterns = [
     path('publisher-dashboard/', views.publisher_dashboard, name='publisher_dashboard'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
 
+    path('student/profile/', views.student_profile, name='student_profile'),
+    path('instructor/profile/', views.instructor_profile, name='instructor_profile'),
+    path('publisher/profile/', views.publisher_profile, name='publisher_profile'),
+
     path('admin-dashboard/students/', views.manage_students, name='manage_students'),
     path('admin-dashboard/publishers/', views.manage_publishers, name='manage_publishers'),
     path('admin-dashboard/instructors/', views.manage_instructors, name='manage_instructors'),
@@ -39,6 +43,7 @@ urlpatterns = [
     path('admin-dashboard/delete-student/<int:user_id>/', views.delete_student, name='delete_student'),
 
     path('convert-pdf-to-dyslexic/', views.convert_pdf, name='convert_pdf'),
+    path('convert-text-to-dyslexic/', views.convert_text, name='convert_text'),
 
 ]
 

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-account"></i></span>
+                Publisher Profile
+            </p>
+        </header bring
+        <div class="card-content">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <img src="{{ account.profile_picture.url }}" alt="Profile Picture" style="max-width: 150px; border-radius: 50%;">
+                    <div class="field-body">
+                        <div class="field file">
+                            <label class="upload control">
+                                <a class="button blue">Upload New Picture</a>
+                                <input type="file" name="profile_picture">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Name</label>
+                    <div class="control icons-left">
+                        <input class="input" type="text" name="name" value="{{ profile.name|default_if_none:'' }}" required>
+                        <span class="icon left"><i class="mdi mdi-account"></i></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Company Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="company_name" value="{{ profile.company_name|default_if_none:'' }}" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Work Details</label>
+                    <div class="control">
+                        <textarea class="textarea" name="work_details" required>{{ profile.work_details|default_if_none:'' }}</textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Website</label>
+                    <div class="control">
+                        <input class="input" type="url" name="website" value="{{ profile.website|default_if_none:'' }}">
+                    </div>
+                </div>
+                <hr>
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Save</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'publisher_profile' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
