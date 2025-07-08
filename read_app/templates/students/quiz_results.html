@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load custom_filters %}
+
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-check"></i></span>
+                Quiz Results: {{ quiz.title }}
+            </p>
+        </header>
+        <div class="card-content">
+            <p><strong>Score:</strong> {{ submission.score }} / 5</p>
+            <p><strong>Total Points:</strong> {{ total_points }}</p>
+            <hr>
+            {% for question in questions %}
+            <div class="field">
+                <label class="label">{{ question.question_text }}</label>
+                <p><strong>Your Answer:</strong> 
+                    {% with key=question.id|stringformat:"s" %}
+                        {% with answer=submission.answers|lookup:key %}
+                            {% if answer|stringformat:"s" == "1" %}{{ question.option_1 }}
+                            {% elif answer|stringformat:"s" == "2" %}{{ question.option_2 }}
+                            {% elif answer|stringformat:"s" == "3" %}{{ question.option_3 }}
+                            {% elif answer|stringformat:"s" == "4" %}{{ question.option_4 }}
+                            {% endif %}
+                            {% if answer == question.correct_option %}
+                                <span class="icon text-green"><i class="mdi mdi-check"></i></span>
+                            {% else %}
+                                <span class="icon text-red"><i class="mdi mdi-close"></i></span>
+                            {% endif %}
+                        {% endwith %}
+                    {% endwith %}
+                </p>
+                <p><strong>Correct Answer:</strong> 
+                    {% if question.correct_option == 1 %}{{ question.option_1 }}
+                    {% elif question.correct_option == 2 %}{{ question.option_2 }}
+                    {% elif question.correct_option == 3 %}{{ question.option_3 }}
+                    {% elif question.correct_option == 4 %}{{ question.option_4 }}
+                    {% endif %}
+                </p>
+            </div>
+            <hr>
+            {% endfor %}
+            <div class="field grouped">
+                <div class="control">
+                    <a href="{% url 'unattended_quizzes' %}" class="button blue">Back to Quizzes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

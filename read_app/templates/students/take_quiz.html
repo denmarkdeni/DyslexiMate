@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-open"></i></span>
+                Quiz: {{ quiz.title }}
+            </p>
+        </header>
+        <div class="card-content">
+            <form method="post">
+                {% csrf_token %}
+                {% for question in questions %}
+                <div class="field">
+                    <label class="label">{{ question.question_text }}</label>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="answer_{{ question.id }}" value="1" required>
+                            <span class="check"></span>
+                            <span class="control-label">{{ question.option_1 }}</span>
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="answer_{{ question.id }}" value="2">
+                            <span class="check"></span>
+                            <span class="control-label">{{ question.option_2 }}</span>
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="answer_{{ question.id }}" value="3">
+                            <span class="check"></span>
+                            <span class="control-label">{{ question.option_3 }}</span>
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="answer_{{ question.id }}" value="4">
+                            <span class="check"></span>
+                            <span class="control-label">{{ question.option_4 }}</span>
+                        </label>
+                    </div>
+                </div>
+                <hr>
+                {% endfor %}
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Submit Quiz</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'unattended_quizzes' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

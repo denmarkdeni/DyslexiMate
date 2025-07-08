@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-share"></i></span>
+                Share Book: {{ book.name }}
+            </p>
+            <a class="card-header-icon" href="{% url 'book_list' %}">
+                <span class="icon"><i class="mdi mdi-arrow-left"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="checkbox">
+                        <input type="checkbox" id="select-all" name="select_all">
+                        <span class="check"></span>
+                        <span class="control-label">Select All Students</span>
+                    </label>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Education Level</th>
+                            <th>School</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="image-cell">
+                                <div class="image">
+                                    <img src="{{ student.profile_picture.url }}" class="rounded-full">
+                                </div>
+                            </td>
+                            <td data-label="Name">{{ student.studentprofile.name|default:"N/A" }}</td>
+                            <td data-label="Username">{{ student.user.username }}</td>
+                            <td data-label="Education Level">{{ student.studentprofile.education_level|default:"N/A" }}</td>
+                            <td data-label="School">{{ student.studentprofile.school|default:"N/A" }}</td>
+                            <td class="actions-cell">
+                                <div class="buttons right nowrap">
+                                    <label class="checkbox">
+                                        <input type="checkbox" name="students" value="{{ student.id }}" class="student-checkbox">
+                                        <span class="check"></span>
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No students found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Assign Book</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'book_list' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<script>
+document.getElementById('select-all').addEventListener('change', function() {
+    let checkboxes = document.querySelectorAll('.student-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+});
+</script>
+{% endblock %}

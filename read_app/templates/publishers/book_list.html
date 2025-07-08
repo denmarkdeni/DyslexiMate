@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                {% if user.account.role == 'publisher' %}
+                <span class="icon"><i class="mdi mdi-book-multiple"></i></span>
+                My Uploaded Books
+                {% else %}
+                <span class="icon"><i class="mdi mdi-book"></i></span>
+                Books List
+                {% endif %}
+            </p>
+            <a class="card-header-icon" href="{% url 'book_list' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Published Year</th>
+                        <th>Dyslexic-Friendly</th>
+                        <th>Uploaded At</th>
+                        <th>File</th>
+                        {% if user.is_superuser %}<th>Actions</th>{% endif %}
+                        {% if user.account.role == 'instructor' %}<th>Actions</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ book.cover_image.url|default:'/media/book_covers/default_cover.jpg' }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Name">{{ book.name }}</td>
+                        <td data-label="Author">{{ book.author }}</td>
+                        <td data-label="Published Year">{{ book.published_year }}</td>
+                        <td data-label="Dyslexic-Friendly">{{ book.is_dyslexic|yesno:"Yes,No" }}</td>
+                        <td data-label="Uploaded At">
+                            <small class="text-gray-500" title="{{ book.uploaded_at }}">{{ book.uploaded_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td data-label="File">
+                            <a href="{{ book.file.url }}" class="button small blue" target="_blank">
+                                <span class="icon"><i class="mdi mdi-download"></i></span>
+                            </a>
+                        </td>
+                        {% if user.is_superuser %}
+                        <td data-label="Actions">
+                            <a href="{% url 'remove_book' book.id %}" class="button small red">
+                                <span class="icon"><i class="mdi mdi-trash-can"></i></span>
+                            </a>
+                        </td>
+                        {% endif %}
+                        {% if user.account.role == 'instructor' %}
+                        <td class="actions-cell">
+                            <div class="buttons right nowrap">
+                                <a href="{% url 'share_book' book.id %}" class="button small green">
+                                    <span class="icon"><i class="mdi mdi-share"></i></span>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No books uploaded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

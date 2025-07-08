@@ -1,5 +1,70 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block content %}
+<section class="section main-section">
+  <div class="card has-table">
+    <header class="card-header">
     
+      <p class="card-header-title">
+        <span class="icon"><i class="mdi mdi-account-multiple"></i></span>
+        Manage Publishers
+      </p>
+      <a class="card-header-icon" href="{% url 'manage_publishers' %}">
+        <span class="icon"><i class="mdi mdi-reload"></i></span>
+      </a>
+    </header>
+    <div class="card-content">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Company Name</th>
+            <th>City</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for publisher in publishers %}
+          <tr>
+            <td class="image-cell">
+              <div class="image">
+                <img src="{{ publisher.profile_picture.url }}" class="rounded-full">
+              </div>
+            </td>
+            <td data-label="Name">{{ publisher.publisherprofile.name|default:"N/A" }}</td>
+            <td data-label="Username">{{ publisher.user.username }}</td>
+            <td data-label="Company Name">{{ publisher.publisherprofile.company_name|default:"N/A" }}</td>
+            <td data-label="Work Details">{{ publisher.publisherprofile.work_details|default:"N/A" }}</td>
+            <td data-label="Website">{{ publisher.publisherprofile.website|default:"N/A" }}</td>
+            <td data-label="Status">{{ publisher.user.is_active|yesno:"Active,Inactive" }}</td>
+            <td class="actions-cell">
+              <div class="buttons right nowrap">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_id" value="{{ publisher.user.id }}">
+                  <input type="hidden" name="action" value="{% if publisher.user.is_active %}deactivate{% else %}activate{% endif %}">
+                  <button class="button small {% if publisher.user.is_active %}red{% else %}green{% endif %}" type="submit">
+                    <span class="icon"><i class="mdi mdi-account-off"></i></span>
+                  </button>
+                  </form>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{ publisher.user.id }}">
+                    <input type="hidden" name="action" value="delete">
+                    <button class="button small red" type="submit">
+                      <span class="icon"><i class="mdi mdi-trash-can"></i></span>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+</section>
 {% endblock %}

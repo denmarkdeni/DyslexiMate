@@ -1,15 +1,16 @@
 from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import render, redirect
+from django.db.models import Count
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django import forms
 from .forms import RegisterForm, LoginForm
 from .models import Account, StudentProfile, InstructorProfile, PublisherProfile
-from .models import Account
+from .models import Book, BookAssignment, Quiz, Question, QuizSubmission
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -121,30 +122,6 @@ def manage_instructors(request):
     if request.user.is_authenticated:
         instructors = Account.objects.filter(role='instructor')
         return render(request, 'admin/manage_instructors.html', {'instructors': instructors})
-    else:
-        return redirect('login')
-    
-def edit_student(request, user_id):
-    if request.user.is_authenticated:
-        student = User.objects.get(id=user_id)
-        if request.method == 'POST':
-            form = RegisterForm(request.POST, instance=student.user)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Updated.')
-                return redirect('manage_students')
-        else:
-            form = RegisterForm(instance=student)
-        return render(request, 'edit_student.html', {'form': form})
-    else:
-        return redirect('login')
-    
-def delete_student(request, user_id):
-    if request.user.is_authenticated:
-        student = User.objects.get(id=user_id)
-        student.delete()
-        messages.success(request, 'Deleted successfully.')
-        return redirect('manage_students')
     else:
         return redirect('login')
 
@@ -316,3 +293,243 @@ def publisher_profile(request):
         return redirect('publisher_profile')
 
     return render(request, 'profiles/publisher_profile.html', {'account': account, 'profile': profile})
+
+def superuser_required(user):
+    return user.is_superuser
+
+@user_passes_test(superuser_required, login_url='login')
+def manage_students(request):
+    students = Account.objects.filter(role='student').select_related('user', 'studentprofile')
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        user = User.objects.get(id=user_id)
+        if action == 'deactivate':
+            user.is_active = False
+            user.save()
+            messages.success(request,"User deactivated")
+        elif action == 'activate':
+            user.is_active = True
+            user.save()
+            messages.success(request,"User activated")
+        elif action == 'delete':
+            user.delete()
+            messages.success(request,"User Deleted")
+        return redirect('manage_students')
+    return render(request, 'admin/manage_students.html', {'students': students})
+
+@user_passes_test(superuser_required, login_url='login')
+def manage_instructors(request):
+    instructors = Account.objects.filter(role='instructor').select_related('user', 'instructorprofile')
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        user = User.objects.get(id=user_id)
+        if action == 'deactivate':
+            user.is_active = False
+            user.save()
+            messages.success(request,"User deactivated")
+        elif action == 'activate':
+            user.is_active = True
+            user.save()
+            messages.success(request,"User activated")
+        elif action == 'delete':
+            user.delete()
+            messages.success(request,"User Deleted")
+        return redirect('manage_instructors')
+    return render(request, 'admin/manage_instructors.html', {'instructors': instructors})
+
+@user_passes_test(superuser_required, login_url='login')
+def manage_publishers(request):
+    publishers = Account.objects.filter(role='publisher').select_related('user', 'publisherprofile')
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        user = User.objects.get(id=user_id)
+        if action == 'deactivate':
+            user.is_active = False
+            user.save()
+            messages.success(request,"User deactivated")
+        elif action == 'activate':
+            user.is_active = True
+            user.save()
+            messages.success(request,"User activated")
+        elif action == 'delete':
+            user.delete()
+            messages.success(request,"User Deleted")
+        return redirect('manage_publishers')
+    return render(request, 'admin/manage_publishers.html', {'publishers': publishers})
+
+@login_required
+def upload_book(request):
+    try:
+        account = Account.objects.get(user=request.user, role='publisher')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        author = request.POST.get('author')
+        published_year = request.POST.get('published_year')
+        is_dyslexic = request.POST.get('is_dyslexic') == 'on'
+        description = request.POST.get('description')
+        file = request.FILES.get('file')
+        cover_image = request.FILES.get('cover_image')
+
+        if name and author and published_year and file:
+            Book.objects.create(
+                publisher=account,
+                name=name,
+                author=author,
+                published_year=int(published_year),
+                is_dyslexic=is_dyslexic,
+                file=file,
+                description=description or '',
+                cover_image=cover_image
+            )
+            messages.success(request,"Book Uploaded")
+            return redirect('upload_book')
+
+    return render(request, 'publishers/upload_book.html', {'account': account})
+
+@login_required
+def book_list(request):
+    if request.user.is_superuser or not request.user.account.role == 'publisher':
+        books = Book.objects.all().order_by('-uploaded_at')
+    else:
+        try:
+            account = Account.objects.get(user=request.user, role='publisher')
+        except ObjectDoesNotExist:
+            return redirect('home')
+        
+        books = Book.objects.filter(publisher=account).order_by('-uploaded_at')
+
+    return render(request, 'publishers/book_list.html', { 'books': books})
+
+@login_required
+def remove_book(request, book_id):
+    book = Book.objects.get(id=book_id)
+    book.delete()
+    messages.success(request,"Book Removed")
+    return redirect("book_list")
+
+@login_required
+def share_book(request, book_id):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+        book = Book.objects.get(id=book_id)
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    students = Account.objects.filter(role='student').select_related('studentprofile')
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('students')  # Get list of selected student IDs
+        if 'select_all' in request.POST:
+            student_ids = [student.id for student in students]
+        for student_id in student_ids:
+            student = Account.objects.get(id=student_id, role='student')
+            BookAssignment.objects.get_or_create(book=book, student=student, assigned_by=account)
+        return redirect('book_list')
+
+    return render(request, 'instructors/share_book.html', {'account': account, 'book': book, 'students': students})
+
+@login_required
+def assigned_books(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    assignments = BookAssignment.objects.filter(student=account).select_related('book').order_by('-assigned_at')
+    return render(request, 'students/assigned_books.html', {'account': account, 'assignments': assignments})
+
+@login_required
+def upload_quiz(request):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    books = Book.objects.all()
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        book_id = request.POST.get('book')
+        if title and all(request.POST.get(f'question_{i}') for i in range(1, 6)):
+            quiz = Quiz.objects.create(
+                instructor=account,
+                title=title,
+                book=Book.objects.get(id=book_id) if book_id else None
+            )
+            for i in range(1, 6):
+                Question.objects.create(
+                    quiz=quiz,
+                    question_text=request.POST.get(f'question_{i}'),
+                    option_1=request.POST.get(f'option_{i}_1'),
+                    option_2=request.POST.get(f'option_{i}_2'),
+                    option_3=request.POST.get(f'option_{i}_3'),
+                    option_4=request.POST.get(f'option_{i}_4'),
+                    correct_option=int(request.POST.get(f'correct_option_{i}'))
+                )
+            return redirect('quiz_list')
+    return render(request, 'instructors/upload_quiz.html', {'account': account, 'books': books})
+
+@login_required
+def quiz_list(request):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    quizzes = Quiz.objects.filter(instructor=account).annotate(student_count=Count('quizsubmission')).order_by('-created_at')
+    return render(request, 'instructors/quiz_list.html', {'account': account, 'quizzes': quizzes})
+
+@login_required
+def unattended_quizzes(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    submitted_quizzes = QuizSubmission.objects.filter(student=account).values_list('quiz_id', flat=True)
+    quizzes = Quiz.objects.exclude(id__in=submitted_quizzes).order_by('-created_at')
+    return render(request, 'students/unattended_quizzes.html', {'account': account, 'quizzes': quizzes})
+
+@login_required
+def take_quiz(request, quiz_id):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+        quiz = Quiz.objects.get(id=quiz_id)
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    if QuizSubmission.objects.filter(student=account, quiz=quiz).exists():
+        return redirect('unattended_quizzes')
+
+    questions = quiz.questions.all()
+    if request.method == 'POST':
+        answers = {str(q.id): int(request.POST.get(f'answer_{q.id}')) for q in questions}
+        score = sum(1 for q in questions if answers[str(q.id)] == q.correct_option)
+        QuizSubmission.objects.create(student=account, quiz=quiz, score=score, answers=answers)
+        student_profile = account.studentprofile
+        student_profile.points += score
+        student_profile.save()
+        return redirect('quiz_results', quiz_id=quiz.id)
+    return render(request, 'students/take_quiz.html', {'account': account, 'quiz': quiz, 'questions': questions})
+
+@login_required
+def quiz_results(request, quiz_id):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+        quiz = Quiz.objects.get(id=quiz_id)
+    except ObjectDoesNotExist:
+        return redirect('home') 
+
+    submission = QuizSubmission.objects.filter(student=account, quiz=quiz).first()
+    questions = quiz.questions.all()
+    return render(request, 'students/quiz_results.html', {
+        'account': account,
+        'quiz': quiz,
+        'submission': submission,
+        'questions': questions,
+        'total_points': account.studentprofile.points
+    })

@@ -1285,8 +1285,8 @@ td.image-cell .image {
 }
 @media (min-width: 1024px) {
   td.image-cell .image {
-    height: 1.5rem;
-    width: 1.5rem;
+    height: 3rem;
+    width: 3rem;
   }
 }
 .table-pagination {

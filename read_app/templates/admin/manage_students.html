@@ -1,5 +1,71 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block content %}
-    
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-account-multiple"></i></span>
+                Manage Students
+            </p>
+            <a class="card-header-icon" href="{% url 'manage_students' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Education Level</th>
+                        <th>School</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ student.profile_picture.url }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Name">{{ student.studentprofile.name|default:"N/A" }}</td>
+                        <td data-label="Username">{{ student.user.username }}</td>
+                        <td data-label="Education Level">{{ student.studentprofile.education_level|default:"N/A" }}</td>
+                        <td data-label="School">{{ student.studentprofile.school|default:"N/A" }}</td>
+                        <td data-label="Status">{{ student.user.is_active|yesno:"Active,Inactive" }}</td>
+                        <td class="actions-cell">
+                            <div class="buttons right nowrap">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ student.user.id }}">
+                                    <input type="hidden" name="action" value="{% if student.user.is_active %}deactivate{% else %}activate{% endif %}">
+                                    <button class="button small {% if student.user.is_active %}red{% else %}green{% endif %}" type="submit">
+                                        <span class="icon"><i class="mdi mdi-account-off"></i></span>
+                                    </button>
+                                </form>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ student.user.id }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button class="button small red" type="submit">
+                                        <span class="icon"><i class="mdi mdi-trash-can"></i></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No students found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
 {% endblock %}

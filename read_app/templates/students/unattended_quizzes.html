@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-open"></i></span>
+                Quizzes
+            </p>
+            <a class="card-header-icon" href="{% url 'unattended_quizzes' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Related Book</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in quizzes %}
+                    <tr>
+                        <td data-label="Title">{{ quiz.title }}</td>
+                        <td data-label="Related Book">{{ quiz.book.name|default:"None" }}</td>
+                        <td data-label="Created At">
+                            <small class="text-gray-500" title="{{ quiz.created_at }}">{{ quiz.created_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td class="actions-cell">
+                            <div class="buttons right nowrap">
+                                <a href="{% url 'take_quiz' quiz.id %}" class="button small green">
+                                    <span class="icon"><i class="mdi mdi-play"></i></span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No unattended quizzes available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

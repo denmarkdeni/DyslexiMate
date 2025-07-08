@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-plus"></i></span>
+                Upload New Quiz
+            </p>
+        </header>
+        <div class="card-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label">Quiz Title</label>
+                    <div class="control icons-left">
+                        <input class="input" type="text" name="title" placeholder="Enter quiz title" required>
+                        <span class="icon left"><i class="mdi mdi-book"></i></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Related Book (Optional)</label>
+                    <div class="control">
+                        <select class="input" name="book">
+                            <option value="">None</option>
+                            {% for book in books %}
+                            <option value="{{ book.id }}">{{ book.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% for i in "12345" %}
+                <hr>
+                <div class="field">
+                    <label class="label">Question {{ i }}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="question_{{ i }}" placeholder="Enter question" required>
+                    </div>
+                </div>
+                {% for j in "1234" %}
+                <div class="field">
+                    <label class="label">Option {{ j }}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="option_{{ i }}_{{ j }}" placeholder="Enter option {{ j }}" required>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="field">
+                    <label class="label">Correct Option</label>
+                    <div class="control">
+                        <select class="input" name="correct_option_{{ i }}" required>
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                            <option value="3">Option 3</option>
+                            <option value="4">Option 4</option>
+                        </select>
+                    </div>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Upload Quiz</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'quiz_list' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

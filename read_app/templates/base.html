@@ -101,7 +101,7 @@
       <div class="navbar-item dropdown has-divider has-user-avatar">
         <a class="navbar-link">
           <div class="user-avatar">
-            <img src="{{ user.account.profile_picture.url }}" alt="John Doe" class="rounded-full">
+            <img src="{{ user.account.profile_picture.url|default:"/static/emoji/default.jpg" }}" alt="John Doe" class="rounded-full">
           </div>
           <div class="is-user-name"><span>John Doe</span></div>
           <span class="icon"><i class="mdi mdi-chevron-down"></i></span>
@@ -156,10 +156,34 @@
       </li>
     
       <p class="menu-label">Management</p>
+
       <li class="">
-        <a href="index.html">
+        <a href="{% url 'manage_students' %}">
           <span class="icon"><i class="mdi mdi-account-cog"></i></span>
-          <span class="menu-item-label">Users</span>
+          <span class="menu-item-label">Students</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'manage_publishers' %}">
+          <span class="icon"><i class="mdi mdi-account-cog"></i></span>
+          <span class="menu-item-label">Publishers</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'manage_instructors' %}">
+          <span class="icon"><i class="mdi mdi-account-cog"></i></span>
+          <span class="menu-item-label">Instructors</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Books</p>
+
+      <li class="">
+        <a href="{% url 'book_list' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Books List</span>
         </a>
       </li>
     
@@ -179,6 +203,31 @@
         </a>
       </li>
 
+      <p class="menu-label">Books</p>
+
+      <li class="">
+        <a href="{% url 'book_list' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Books List</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Quiz</p>
+
+      <li class="">
+        <a href="{% url 'upload_quiz' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Upload Quiz</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'quiz_list' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Quiz List</span>
+        </a>
+      </li>
+
     {% elif user.account.role == 'publisher' %}
 
       <li class="">
@@ -192,6 +241,22 @@
         <a href="{% url 'publisher_profile' %}">
           <span class="icon"><i class="mdi mdi-account-circle"></i></span>
           <span class="menu-item-label">Profile</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Publish</p>
+
+      <li class="">
+        <a href="{% url 'upload_book' %}">
+          <span class="icon"><i class="mdi mdi-card-text"></i></span>
+          <span class="menu-item-label">Upload Book</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'book_list' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Books List</span>
         </a>
       </li>
 
@@ -211,7 +276,41 @@
         </a>
       </li>
 
-      <p class="menu-label">Conversion</p>
+      <p class="menu-label">Books</p>
+
+      <li class="">
+        <a href="{% url 'book_list' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Books List</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'assigned_books' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Assigned Books</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Quiz</p>
+
+      <li class="">
+        <a href="{% url 'unattended_quizzes' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Quiz List</span>
+        </a>
+      </li>
+
+      {% comment %} <li class="">
+        <a href="{% url 'quiz_results' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Quiz Results</span>
+        </a>
+      </li> {% endcomment %}
+
+    {% endif %}
+
+    <p class="menu-label">Conversion</p>
 
       <li class="">
         <a href="{% url 'convert_text' %}">
@@ -227,35 +326,6 @@
         </a>
       </li>
 
-    {% endif %}
-
-    </ul>
-    <p class="menu-label">Examples</p>
-    <ul class="menu-list">
-      <li class="--set-active-tables-html">
-        <a href="tables.html">
-          <span class="icon"><i class="mdi mdi-table"></i></span>
-          <span class="menu-item-label">Tables</span>
-        </a>
-      </li>
-      <li class="--set-active-forms-html">
-        <a href="forms.html">
-          <span class="icon"><i class="mdi mdi-square-edit-outline"></i></span>
-          <span class="menu-item-label">Forms</span>
-        </a>
-      </li>
-      <li class="">
-        <a href="{% url 'student_profile' %}">
-          <span class="icon"><i class="mdi mdi-account-circle"></i></span>
-          <span class="menu-item-label">Profile</span>
-        </a>
-      </li>
-      <li>
-        <a href="{% url 'logout' %}">
-          <span class="icon"><i class="mdi mdi-lock"></i></span>
-          <span class="menu-item-label">Login</span>
-        </a>
-      </li>
     </ul>
   </div>
 </aside>

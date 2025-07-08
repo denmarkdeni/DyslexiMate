@@ -39,11 +39,20 @@ urlpatterns = [
     path('admin-dashboard/publishers/', views.manage_publishers, name='manage_publishers'),
     path('admin-dashboard/instructors/', views.manage_instructors, name='manage_instructors'),
 
-    path('admin-dashboard/edit-student/<int:user_id>/', views.edit_student, name='edit_student'),
-    path('admin-dashboard/delete-student/<int:user_id>/', views.delete_student, name='delete_student'),
-
     path('convert-pdf-to-dyslexic/', views.convert_pdf, name='convert_pdf'),
     path('convert-text-to-dyslexic/', views.convert_text, name='convert_text'),
+
+    path('publisher/upload/', views.upload_book, name='upload_book'),
+    path('publisher/books/', views.book_list, name='book_list'),
+    path('remove/books/<int:book_id>', views.remove_book, name='remove_book'),
+    path('instructor/share/<int:book_id>/', views.share_book, name='share_book'),
+    path('student/assigned-books/', views.assigned_books, name='assigned_books'),
+
+    path('instructor/upload-quiz/', views.upload_quiz, name='upload_quiz'),
+    path('instructor/quizzes/', views.quiz_list, name='quiz_list'),
+    path('student/unattended-quizzes/', views.unattended_quizzes, name='unattended_quizzes'),
+    path('student/take-quiz/<int:quiz_id>/', views.take_quiz, name='take_quiz'),
+    path('student/quiz-results/<int:quiz_id>/', views.quiz_results, name='quiz_results'),
 
 ]
 

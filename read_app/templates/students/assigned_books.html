@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-book-open"></i></span>
+                My Assigned Books
+            </p>
+            <a class="card-header-icon" href="{% url 'assigned_books' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Published Year</th>
+                        <th>Dyslexic-Friendly</th>
+                        <th>Assigned At</th>
+                        <th>File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ assignment.book.cover_image.url|default:'/media/book_covers/default_cover.jpg' }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Name">{{ assignment.book.name }}</td>
+                        <td data-label="Author">{{ assignment.book.author }}</td>
+                        <td data-label="Published Year">{{ assignment.book.published_year }}</td>
+                        <td data-label="Dyslexic-Friendly">{{ assignment.book.is_dyslexic|yesno:"Yes,No" }}</td>
+                        <td data-label="Assigned At">
+                            <small class="text-gray-500" title="{{ assignment.assigned_at }}">{{ assignment.assigned_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td data-label="File">
+                            <a href="{{ assignment.book.file.url }}" class="button small blue" target="_blank">
+                                <span class="icon"><i class="mdi mdi-download"></i></span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No books assigned yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
