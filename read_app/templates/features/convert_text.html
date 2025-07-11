@@ -98,7 +98,34 @@
         });
     
         document.getElementById('outputSection').innerText = words.join(' ');
+
+        // ✅ Send signal to backend to update text conversion count
+        fetch('/log-text-conversion/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()  // CSRF token required in Django
+            },
+            body: JSON.stringify({ message: 'Text converted' })
+        });
+
     }    
+
+    function getCSRFToken() {
+        let name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            let cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     function readAloud() {
         let text = document.getElementById('outputSection').innerText;

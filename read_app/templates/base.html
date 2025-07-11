@@ -8,12 +8,12 @@
 
   <!-- Tailwind is included -->
   <link rel="stylesheet" href="/static/dash/css/main.css?v=1628755089081">
+  <link href="static/home/css/bootstrap-icons.css" rel="stylesheet">
 
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"/>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"/>
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"/>
   <link rel="mask-icon" href="safari-pinned-tab.svg" color="#00b4b6"/>
-
   <meta name="description" content="dashboard">
 
 </head>
@@ -116,8 +116,8 @@
             <span>Settings</span>
           </a> {% endcomment %}
           <a class="navbar-item">
-            <span class="icon"><i class="mdi mdi-email"></i></span>
-            <span>Messages</span>
+            <span class="icon"><i class="mdi mdi-star"></i></span>
+            <span>Role : {{ user.account.role|default:"admin"|title }}</span>
           </a>
           <hr class="navbar-divider">
           <a class="navbar-item" href={% url 'logout' %}>
@@ -138,8 +138,10 @@
 <aside class="aside is-placed-left is-expanded">
   <div class="aside-tools">
     <div>
-      <b class="font-black">{{ user.account.role|default:"admin"|title }}
-      </b>
+      <a href="{% url 'home' %}">
+          {% comment %} <i class="mdi mdi-mapbox"></i> {% endcomment %}
+          <span>Dyslexicmate</span>
+      </a>
     </div>
   </div>
   <div class="menu is-menu-main">
@@ -257,6 +259,13 @@
         <a href="{% url 'book_list' %}">
           <span class="icon"><i class="mdi mdi-book"></i></span>
           <span class="menu-item-label">Books List</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'review_details' %}">
+          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="menu-item-label">Reviews</span>
         </a>
       </li>
 

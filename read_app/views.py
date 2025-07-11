@@ -1,16 +1,17 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django import forms
 from .forms import RegisterForm, LoginForm
 from .models import Account, StudentProfile, InstructorProfile, PublisherProfile
-from .models import Book, BookAssignment, Quiz, Question, QuizSubmission
+from .models import Book, BookAssignment, Quiz, Question, QuizSubmission, Review, Performance
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -78,29 +79,49 @@ def logout_view(request):
 
 def student_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'dashboards/student_dashboard.html')
+        context = {
+            'points':QuizSubmission.objects.filter(student__user = request.user).aggregate(total=Sum('score'))['total'] or 0 , 
+            'feedbacks': Review.objects.filter(student__user = request.user).count(),
+            'conversions': request.user.account.conversions,
+        }
+        return render(request, 'dashboards/student_dashboard.html',context)
     else:
         return redirect('login')
 
 def publisher_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'dashboards/publisher_dashboard.html')
+        context = {
+            'books':Book.objects.filter(publisher__user = request.user).count() , 
+            'reviews': Review.objects.filter(book__publisher__user = request.user).count(),
+            'conversions': request.user.account.conversions,
+        }
+        return render(request, 'dashboards/publisher_dashboard.html',context)
     else:
         return redirect('login')
 
 def instructor_dashboard(request):
     if request.user.is_authenticated:
-        return render(request, 'dashboards/instructor_dashboard.html')
+        context = {
+            'questions':Quiz.objects.filter(instructor__user = request.user).count()*5 , 
+            'books_shared': BookAssignment.objects.filter(assigned_by__user = request.user).count(),
+            'conversions': request.user.account.conversions,
+        }
+        return render(request, 'dashboards/instructor_dashboard.html',context)
     else:
         return redirect('login')
 
 def admin_dashboard(request):
     if request.user.is_authenticated:
-        studentsCount = Account.objects.filter(role='student').count()
-        publishersCount = Account.objects.filter(role='publisher').count()
-        instructorsCount = Account.objects.filter(role='instructor').count()
-        usersCount = Account.objects.all().count()  
-        return render(request, 'dashboards/admin_dashboard.html',{'studentsCount': studentsCount, 'publishersCount': publishersCount, 'instructorsCount': instructorsCount, 'usersCount': usersCount})
+        performance , created = Performance.objects.get_or_create(id=1)
+        context = {
+            'studentsCount':  Account.objects.filter(role='student').count(), 
+            'publishersCount': Account.objects.filter(role='publisher').count(), 
+            'instructorsCount': Account.objects.filter(role='instructor').count(), 
+            'usersCount': Account.objects.all().count(),
+            'books': Book.objects.all().count(),
+            'total_conversions': performance.text_conversions + performance.pdf_conversions,
+        }
+        return render(request, 'dashboards/admin_dashboard.html', context)
     else:
         return redirect('login')
 
@@ -163,6 +184,14 @@ def convert_pdf(request):
             c.save()
             buffer.seek(0)
 
+            performance , created = Performance.objects.get_or_create(id=1)
+            performance.pdf_conversions += 1
+            performance.save()
+            account = Account.objects.get(user=request.user)
+            account.conversions +=1
+            account.save()
+            messages.success(request, "Success.")
+
             # Step 5: Return the PDF as response
             return HttpResponse(buffer, content_type='application/pdf')
 
@@ -173,6 +202,18 @@ def convert_text(request):
         return render(request, 'features/convert_text.html')
     else:
         return redirect('login')
+
+@csrf_exempt
+def log_text_conversion(request):
+    if request.method == 'POST':
+        performance , created = Performance.objects.get_or_create(id=1)
+        performance.text_conversions += 1
+        performance.save()
+        account = Account.objects.get(user=request.user)
+        account.conversions +=1
+        account.save()
+        return JsonResponse({'message': 'Text Conversion Incremented.'})
+
 
 @login_required
 def student_profile(request):
@@ -429,6 +470,7 @@ def share_book(request, book_id):
         for student_id in student_ids:
             student = Account.objects.get(id=student_id, role='student')
             BookAssignment.objects.get_or_create(book=book, student=student, assigned_by=account)
+        messages.success(request, "Success.")
         return redirect('book_list')
 
     return render(request, 'instructors/share_book.html', {'account': account, 'book': book, 'students': students})
@@ -470,6 +512,7 @@ def upload_quiz(request):
                     option_4=request.POST.get(f'option_{i}_4'),
                     correct_option=int(request.POST.get(f'correct_option_{i}'))
                 )
+            messages.success(request, "Success.")
             return redirect('quiz_list')
     return render(request, 'instructors/upload_quiz.html', {'account': account, 'books': books})
 
@@ -513,6 +556,7 @@ def take_quiz(request, quiz_id):
         student_profile = account.studentprofile
         student_profile.points += score
         student_profile.save()
+        messages.success(request, "Success.")
         return redirect('quiz_results', quiz_id=quiz.id)
     return render(request, 'students/take_quiz.html', {'account': account, 'quiz': quiz, 'questions': questions})
 
@@ -533,3 +577,39 @@ def quiz_results(request, quiz_id):
         'questions': questions,
         'total_points': account.studentprofile.points
     })
+
+@login_required
+def review_book(request, book_id):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+        book = Book.objects.get(id=book_id)
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    if Review.objects.filter(student=account, book=book).exists():
+        messages.warning(request, "Already Reviewed.")
+        return redirect('assigned_books')
+
+    if request.method == 'POST':
+        feedback = request.POST.get('feedback')
+        rating = request.POST.get('rating')
+        if feedback and rating:
+            Review.objects.create(
+                book=book,
+                student=account,
+                feedback=feedback,
+                rating=int(rating)
+            )
+            messages.success(request, "Reviewed.")
+            return redirect('assigned_books')
+    return render(request, 'students/review_book.html', {'account': account, 'book': book})
+
+@login_required
+def review_details(request):
+    try:
+        account = Account.objects.get(user=request.user, role='publisher')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    reviews = Review.objects.filter(book__publisher=account).select_related('book', 'student__studentprofile').order_by('-created_at')
+    return render(request, 'publishers/review_details.html', {'account': account, 'reviews': reviews})

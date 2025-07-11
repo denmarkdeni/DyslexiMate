@@ -19,15 +19,85 @@
     </div>
 </section>
 
-<div class="pt-0">
-    <h2 class="font-bold text-2xl text-green-600" >System Overview</h2><br>
-    <div class="card">
-        <div class="chart-container" >
-        <canvas id="casesChart"></canvas>
+<section class="section main-section">
+
+    <div class="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">
+      <div class="card">
+        <div class="card-content">
+          <div class="flex items-center justify-between">
+            <div class="widget-label">
+              <h3>
+                Users
+              </h3>
+              <h1>
+                {{ usersCount }}
+              </h1>
+            </div>
+            <span class="icon widget-icon text-green-500"><i class="mdi mdi-account-multiple mdi-48px"></i></span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <div class="flex items-center justify-between">
+            <div class="widget-label">
+              <h3>
+                Total Conversions
+              </h3>
+              <h1>
+                {{ total_conversions }}
+              </h1>
+            </div>
+           <span class="icon widget-icon text-blue-500"><i class="mdi mdi-content-paste mdi-48px"></i></span>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <div class="flex items-center justify-between">
+            <div class="widget-label">
+              <h3>
+                Books 
+              </h3>
+              <h1>
+                {{ books }}
+              </h1>
+            </div>
+            <span class="icon widget-icon text-red-500"><i class="mdi mdi-book mdi-48px"></i></span>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
 
-
+    <div class="card mb-6">
+      <header class="card-header">
+        <p class="card-header-title">
+          <span class="icon"><i class="mdi mdi-finance"></i></span>
+          System Overview
+        </p>
+        <a href="#" class="card-header-icon">
+          <span class="icon"><i class="mdi mdi-reload"></i></span>
+        </a>
+      </header>
+      <div class="card-content">
+        <div class="chart-area">
+          <div class="h-full">
+            <div class="chartjs-size-monitor">
+              <div class="chartjs-size-monitor-expand">
+                <div></div>
+              </div>
+              <div class="chartjs-size-monitor-shrink">
+                <div></div>
+              </div>
+            </div>
+            <canvas id="casesChart" width="2992" height="1000" class="chartjs-render-monitor block" style="height: 400px; width: 1197px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -46,7 +116,7 @@
         data: {
         labels: ['Total Users', 'Students', 'Instructors', 'Publishers'],
         datasets: [{
-            label: 'System Metrics',
+            label: 'System Users',
             data: [usersCount, studentsCount, instructorsCount, publishersCount],
             backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', 'green'],
             borderWidth: 1

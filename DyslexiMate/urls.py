@@ -54,6 +54,11 @@ urlpatterns = [
     path('student/take-quiz/<int:quiz_id>/', views.take_quiz, name='take_quiz'),
     path('student/quiz-results/<int:quiz_id>/', views.quiz_results, name='quiz_results'),
 
+    path('student/review/<int:book_id>/', views.review_book, name='review_book'),
+    path('publisher/reviews/', views.review_details, name='review_details'),
+
+    path('log-text-conversion/', views.log_text_conversion, name='log_text_conversion'),
+
 ]
 
 if settings.DEBUG:

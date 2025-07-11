@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-comment-multiple"></i></span>
+                Book Reviews
+            </p>
+            <a class="card-header-icon" href="{% url 'review_details' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Student</th>
+                        <th>Feedback</th>
+                        <th>Rating</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td data-label="Book">{{ review.book.name }}</td>
+                        <td data-label="Student">{{ review.student.studentprofile.name|default:review.student.user.username }}</td>
+                        <td data-label="Feedback">{{ review.feedback }}</td>
+                        <td data-label="Rating">{{ review.rating }} Star{{ review.rating|pluralize }}</td>
+                        <td data-label="Created At">
+                            <small class="text-gray-500" title="{{ review.created_at }}">{{ review.created_at|date:"M d, Y" }}</small>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No reviews yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

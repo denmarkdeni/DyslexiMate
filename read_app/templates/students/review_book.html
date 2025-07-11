@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-comment"></i></span>
+                Review Book: {{ book.name }}
+            </p>
+        </header>
+        <div class="card-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label">Feedback</label>
+                    <div class="control">
+                        <textarea class="textarea" name="feedback" placeholder="Enter your feedback" required></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Rating</label>
+                    <div class="control">
+                        <select class="input" name="rating" required>
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                        </select>
+                    </div>
+                </div>
+                <hr>
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Submit Review</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'assigned_books' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

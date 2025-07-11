@@ -11,9 +11,16 @@ class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
     profile_picture = models.ImageField(upload_to='profile_pics/', default='profile_pics/default.jpg')
+    conversions = models.PositiveIntegerField(default=0)
     
     def __str__(self):
         return f"{self.user.username} ({self.role})"
+
+class Performance(models.Model):
+    text_conversions = models.PositiveIntegerField(default=0)
+    pdf_conversions = models.PositiveIntegerField(default=0)
+    def __str__(self):
+        return f"Total Conversions: {self.text_conversions} + {self.pdf_conversions}"
 
 class StudentProfile(models.Model):
     account = models.OneToOneField(Account, on_delete=models.CASCADE)
@@ -105,3 +112,16 @@ class QuizSubmission(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} - {self.quiz.title} ({self.score}/5)" 
+    
+class Review(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="reviews")
+    student = models.ForeignKey(Account, on_delete=models.CASCADE, limit_choices_to={'role':'student'}, related_name="feedbacks")
+    feedback = models.TextField()
+    rating = models.PositiveIntegerField(choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together=('book','student')
+    
+    def __str__(self):
+        return f"{self.student.user.username} on {self.book.name} ({self.rating} stars)"

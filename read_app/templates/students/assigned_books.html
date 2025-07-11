@@ -22,6 +22,7 @@
                         <th>Dyslexic-Friendly</th>
                         <th>Assigned At</th>
                         <th>File</th>
+                        <th>Review</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,6 +44,13 @@
                             <a href="{{ assignment.book.file.url }}" class="button small blue" target="_blank">
                                 <span class="icon"><i class="mdi mdi-download"></i></span>
                             </a>
+                        </td>
+                        <td class="actions-cell">
+                            <div class="buttons right nowrap">
+                                <a href="{% url 'review_book' assignment.book.id %}" class="button small green">
+                                    <span class="icon"><i class="mdi mdi-star"></i></span>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
