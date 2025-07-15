@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card mb-6">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-message"></i></span>
+                Send Message to {{ student.studentprofile.name|default:student.user.username }}
+            </p>
+        </header>
+        <div class="card-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label">Message</label>
+                    <div class="control">
+                        <textarea class="textarea" name="content" placeholder="Enter your message" required></textarea>
+                    </div>
+                </div>
+                <hr>
+                <div class="field grouped">
+                    <div class="control">
+                        <button type="submit" class="button green">Send Message</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'subscribed_students' %}" class="button red">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

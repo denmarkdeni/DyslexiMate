@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-account-multiple"></i></span>
+                Subscribed Students
+            </p>
+            <a class="card-header-icon" href="{% url 'subscribed_students' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Education Level</th>
+                        <th>School</th>
+                        <th>Points</th>
+                        <th>Subscribed At</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subscription in subscriptions %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ subscription.student.profile_picture.url }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Name">{{ subscription.student.studentprofile.name|default:"N/A" }}</td>
+                        <td data-label="Username">{{ subscription.student.user.username }}</td>
+                        <td data-label="Education Level">{{ subscription.student.studentprofile.education_level|default:"N/A" }}</td>
+                        <td data-label="School">{{ subscription.student.studentprofile.school|default:"N/A" }}</td>
+                        <td data-label="Points">{{ subscription.student.studentprofile.points }}</td>
+                        <td data-label="Subscribed At">
+                            <small class="text-gray-500" title="{{ subscription.subscribed_at }}">{{ subscription.subscribed_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td class="actions-cell">
+                            <div class="buttons nowrap">
+                                <a href="{% url 'message' subscription.student.id %}" class="button small green">
+                                    <span class="icon"><i class="mdi mdi-chat"></i></span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No subscribed students.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

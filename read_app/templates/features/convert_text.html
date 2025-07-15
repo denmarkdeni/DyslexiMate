@@ -82,34 +82,38 @@
     }
 
     function convertText() {
-        let text = document.getElementById('inputText').value;
-        
-        // Example words to match against emoji names
-        let words = text.split(/\s+/);
+    let text = document.getElementById('inputText').value;
     
-        words = words.map(word => {
-            let cleanWord = word.toLowerCase().replace(/[^a-z]/gi, '');
-            for (let emoji of emojiList) {
-                if (emoji.name.toLowerCase().includes(cleanWord)) {
-                    return `${emoji.char} ${word}`;
-                }
+    // Example words to match against emoji names
+    let words = text.split(/\s+/);
+    let originalText = text; // Store original text
+    let convertedWords = words.map(word => {
+        let cleanWord = word.toLowerCase().replace(/[^a-z]/gi, '');
+        for (let emoji of emojiList) {
+            if (emoji.name.toLowerCase().includes(cleanWord)) {
+                return `${emoji.char} ${word}`;
             }
-            return word;
-        });
-    
-        document.getElementById('outputSection').innerText = words.join(' ');
+        }
+        return word;
+    });
+    let convertedText = convertedWords.join(' '); // Store converted text
 
-        // ✅ Send signal to backend to update text conversion count
-        fetch('/log-text-conversion/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()  // CSRF token required in Django
-            },
-            body: JSON.stringify({ message: 'Text converted' })
-        });
+    document.getElementById('outputSection').innerText = convertedText;
 
-    }    
+    // Send original and converted text to backend
+    fetch('/log-text-conversion/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // CSRF token required in Django
+        },
+        body: JSON.stringify({
+            message: 'Text converted',
+            original_text: originalText,
+            converted_text: convertedText
+        })
+    });
+}  
 
     function getCSRFToken() {
         let name = 'csrftoken';

@@ -430,6 +430,7 @@ video {
 }
 .field:not(:last-child) {
   margin-bottom: 0.75rem;
+  margin-left: 0.5rem;
 }
 .field.spaced:not(:last-child) {
   margin-bottom: 1.5rem;

@@ -41,6 +41,8 @@ urlpatterns = [
 
     path('convert-pdf-to-dyslexic/', views.convert_pdf, name='convert_pdf'),
     path('convert-text-to-dyslexic/', views.convert_text, name='convert_text'),
+    path('log-text-conversion/', views.log_text_conversion, name='log_text_conversion'),
+    path('conversion-history/', views.conversion_history, name='conversion_history'),
 
     path('publisher/upload/', views.upload_book, name='upload_book'),
     path('publisher/books/', views.book_list, name='book_list'),
@@ -57,7 +59,13 @@ urlpatterns = [
     path('student/review/<int:book_id>/', views.review_book, name='review_book'),
     path('publisher/reviews/', views.review_details, name='review_details'),
 
-    path('log-text-conversion/', views.log_text_conversion, name='log_text_conversion'),
+    path('student/subscribed-instructors/', views.subscribed_instructors, name='subscribed_instructors'),
+    path('student/all-instructors/', views.all_instructors, name='all_instructors'),
+    path('instructor/subscribed-students/', views.subscribed_students, name='subscribed_students'),
+
+    path('instructor/message/<int:student_id>/', views.send_message, name='message'),
+    path('instructor/messages/', views.instructor_messages, name='instructor_messages'),
+    path('student/messages/', views.student_messages, name='student_messages'),
 
 ]
 

@@ -89,6 +89,16 @@
     <!-- <div class="navbar-item">
       <div class="control"><input placeholder="Search everywhere..." class="input"></div>
     </div> -->
+    <div class="navbar-item">
+      <div class="control">
+        <a {% if user.account.role == 'student' %} 
+          href="{% url 'student_messages' %}" 
+          {% elif user.account.role == 'instructor' %} 
+          href="{% url 'instructor_messages' %}" 
+          {% endif %} class="button ">
+            <span class="icon"><i class="mdi mdi-bell"></i></span>
+        </a></div>
+    </div>
   </div>
   <div class="navbar-brand is-right">
     <a class="navbar-item --jb-navbar-menu-toggle" data-target="navbar-menu">
@@ -161,7 +171,7 @@
 
       <li class="">
         <a href="{% url 'manage_students' %}">
-          <span class="icon"><i class="mdi mdi-account-cog"></i></span>
+          <span class="icon"><i class="mdi mdi-school"></i></span>
           <span class="menu-item-label">Students</span>
         </a>
       </li>
@@ -175,7 +185,7 @@
 
       <li class="">
         <a href="{% url 'manage_instructors' %}">
-          <span class="icon"><i class="mdi mdi-account-cog"></i></span>
+          <span class="icon"><i class="mdi mdi-account-tie"></i></span>
           <span class="menu-item-label">Instructors</span>
         </a>
       </li>
@@ -218,15 +228,24 @@
 
       <li class="">
         <a href="{% url 'upload_quiz' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="icon"><i class="mdi mdi-help"></i></span>
           <span class="menu-item-label">Upload Quiz</span>
         </a>
       </li>
 
       <li class="">
         <a href="{% url 'quiz_list' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="icon"><i class="mdi mdi-clipboard-list-outline"></i></span>
           <span class="menu-item-label">Quiz List</span>
+        </a>
+      </li>
+
+      <p class="menu-label">Subscription</p>
+
+      <li class="">
+        <a href="{% url 'subscribed_students' %}">
+          <span class="icon"><i class="mdi mdi-school"></i></span>
+          <span class="menu-item-label">Students</span>
         </a>
       </li>
 
@@ -257,7 +276,7 @@
 
       <li class="">
         <a href="{% url 'book_list' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="icon"><i class="mdi mdi-bookshelf"></i></span>
           <span class="menu-item-label">Books List</span>
         </a>
       </li>
@@ -289,7 +308,7 @@
 
       <li class="">
         <a href="{% url 'book_list' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="icon"><i class="mdi mdi-bookshelf"></i></span>
           <span class="menu-item-label">Books List</span>
         </a>
       </li>
@@ -305,17 +324,19 @@
 
       <li class="">
         <a href="{% url 'unattended_quizzes' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
+          <span class="icon"><i class="mdi mdi-help"></i></span>
           <span class="menu-item-label">Quiz List</span>
         </a>
       </li>
 
-      {% comment %} <li class="">
-        <a href="{% url 'quiz_results' %}">
-          <span class="icon"><i class="mdi mdi-book"></i></span>
-          <span class="menu-item-label">Quiz Results</span>
+      <p class="menu-label">Subscription</p>
+
+      <li class="">
+        <a href="{% url 'subscribed_instructors' %}">
+          <span class="icon"><i class="mdi mdi-school"></i></span>
+          <span class="menu-item-label">Instructors</span>
         </a>
-      </li> {% endcomment %}
+      </li>
 
     {% endif %}
 
@@ -332,6 +353,13 @@
         <a href="{% url 'convert_pdf' %}">
           <span class="icon"><i class="mdi mdi-file-pdf"></i></span>
           <span class="menu-item-label">Dyslexic PDF</span>
+        </a>
+      </li>
+
+      <li class="">
+        <a href="{% url 'conversion_history' %}">
+          <span class="icon"><i class="mdi mdi-history"></i></span>
+          <span class="menu-item-label">History</span>
         </a>
       </li>
 

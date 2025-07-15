@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-message"></i></span>
+                My Messages
+            </p>
+            <a class="card-header-icon" href="{% url 'instructor_messages' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Sender</th>
+                        <th>Recipient</th>
+                        <th>Message</th>
+                        <th>Sent At</th>
+                        <th>Reply</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messages %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ message.sender.profile_picture.url }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Sender">
+                            {% if message.is_reply %}
+                                {{ message.sender.studentprofile.name|default:message.sender.user.username }}
+                            {% else %}
+                                {{ message.sender.instructorprofile.name|default:message.sender.user.username }}
+                            {% endif %}
+                        </td>
+                        <td data-label="Recipient">
+                            {% if message.is_reply %}
+                                {{ message.recipient.instructorprofile.name|default:message.recipient.user.username }}
+                            {% else %}
+                                {{ message.recipient.studentprofile.name|default:message.recipient.user.username }}
+                            {% endif %}
+                        </td>
+                        <td data-label="Message">{{ message.content }}</td>
+                        <td data-label="Sent At">
+                            <small class="text-gray-500" title="{{ message.sent_at }}">{{ message.sent_at|date:"M d, Y H:i" }}</small>
+                        </td>
+                        <td data-label="Reply">{{ message.reply|default:"No reply yet" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No messages sent or received.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

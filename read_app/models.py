@@ -125,3 +125,46 @@ class Review(models.Model):
     
     def __str__(self):
         return f"{self.student.user.username} on {self.book.name} ({self.rating} stars)"
+    
+
+class Subscription(models.Model):
+    student = models.ForeignKey(Account, on_delete=models.CASCADE, limit_choices_to={'role': 'student'}, related_name='subscriptions')
+    instructor = models.ForeignKey(Account, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'}, related_name='subscribers')
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'instructor')
+
+    def __str__(self):
+        return f"{self.student.user.username} subscribes to {self.instructor.user.username}" 
+    
+class Message(models.Model):
+    sender = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='received_messages')
+    content = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    reply = models.TextField(blank=True, null=True)
+    replied_at = models.DateTimeField(blank=True, null=True)
+    is_reply = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"{'Reply: ' if self.is_reply else ''}{self.sender.user.username} to {self.recipient.user.username}: {self.content[:50]}"
+    
+class ConversionHistory(models.Model):
+    TYPE_CHOICES = [
+        ('pdf', 'PDF'),
+        ('text', 'Text'),
+    ]
+    user = models.ForeignKey(Account, on_delete=models.CASCADE)
+    converted_at = models.DateTimeField(auto_now_add=True)
+    original_content = models.FileField(upload_to='originals/', blank=True, null=True)  # For PDF
+    original_text = models.TextField(blank=True, null=True)  # For text
+    converted_content = models.FileField(upload_to='converted/', blank=True, null=True)  # For PDF
+    converted_text = models.TextField(blank=True, null=True)  # For text
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.user.user.username} - {self.type} conversion at {self.converted_at}"

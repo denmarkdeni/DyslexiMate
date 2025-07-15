@@ -1,7 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -9,15 +10,16 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django import forms
+from django.core.files.base import ContentFile
 from .forms import RegisterForm, LoginForm
-from .models import Account, StudentProfile, InstructorProfile, PublisherProfile
-from .models import Book, BookAssignment, Quiz, Question, QuizSubmission, Review, Performance
+from .models import Account, StudentProfile, InstructorProfile, PublisherProfile, Subscription, Message
+from .models import Book, BookAssignment, Quiz, Question, QuizSubmission, Review, Performance,ConversionHistory
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import os, fitz  # PyMuPDF 
+import os, json, fitz  # PyMuPDF 
 
 def home(request):
     return render(request, 'home.html')
@@ -184,6 +186,19 @@ def convert_pdf(request):
             c.save()
             buffer.seek(0)
 
+            # Step 5: Save conversion history
+            account = Account.objects.get(user=request.user)
+            converted_filename = f"converted_{account.user.username}_{pdf_file.name}"
+            converted_file = ContentFile(buffer.getvalue(), name=converted_filename)
+
+            ConversionHistory.objects.create(
+                user=account,
+                type='pdf',
+                original_content=pdf_file,
+                converted_content=converted_file,
+                original_text=extracted_text
+            )
+
             performance , created = Performance.objects.get_or_create(id=1)
             performance.pdf_conversions += 1
             performance.save()
@@ -206,6 +221,18 @@ def convert_text(request):
 @csrf_exempt
 def log_text_conversion(request):
     if request.method == 'POST':
+        account = Account.objects.get(user=request.user)
+        data = json.loads(request.body)
+        original_text = data.get('original_text', '')
+        converted_text = data.get('converted_text', '')
+
+        # Save conversion history
+        ConversionHistory.objects.create(
+            user=account,
+            type='text',
+            original_text=original_text,
+            converted_text=converted_text
+        )
         performance , created = Performance.objects.get_or_create(id=1)
         performance.text_conversions += 1
         performance.save()
@@ -213,7 +240,12 @@ def log_text_conversion(request):
         account.conversions +=1
         account.save()
         return JsonResponse({'message': 'Text Conversion Incremented.'})
-
+    
+@login_required
+def conversion_history(request):
+    account = Account.objects.get(user=request.user)
+    history = ConversionHistory.objects.filter(user=account).order_by('-converted_at')
+    return render(request, 'features/conversion_history.html', {'account': account, 'history': history})
 
 @login_required
 def student_profile(request):
@@ -462,7 +494,8 @@ def share_book(request, book_id):
     except ObjectDoesNotExist:
         return redirect('home')
 
-    students = Account.objects.filter(role='student').select_related('studentprofile')
+    students = Account.objects.filter(role='student',subscriptions__instructor = account).select_related('studentprofile')
+    # print(students[0].__dict__)
     if request.method == 'POST':
         student_ids = request.POST.getlist('students')  # Get list of selected student IDs
         if 'select_all' in request.POST:
@@ -613,3 +646,107 @@ def review_details(request):
 
     reviews = Review.objects.filter(book__publisher=account).select_related('book', 'student__studentprofile').order_by('-created_at')
     return render(request, 'publishers/review_details.html', {'account': account, 'reviews': reviews})
+
+@login_required
+def subscribed_instructors(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    subscriptions = Subscription.objects.filter(student=account).select_related('instructor__instructorprofile')
+    if request.method == 'POST':
+        instructor_id = request.POST.get('instructor_id')
+        action = request.POST.get('action')
+        if action == 'unsubscribe':
+            Subscription.objects.filter(student=account, instructor_id=instructor_id).delete()
+        messages.success(request, "Unsubscribed.")
+        return redirect('subscribed_instructors')
+    return render(request, 'students/subscribed_instructors.html', {'account': account, 'subscriptions': subscriptions})
+
+@login_required
+def all_instructors(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    instructors = Account.objects.filter(role='instructor').select_related('instructorprofile')
+    subscribed_instructor_ids = Subscription.objects.filter(student=account).values_list('instructor_id', flat=True)
+    if request.method == 'POST':
+        instructor_id = request.POST.get('instructor_id')
+        action = request.POST.get('action')
+        if action == 'subscribe':
+            Subscription.objects.get_or_create(student=account, instructor_id=instructor_id)
+        messages.success(request, "Subscribed.")
+        return redirect('all_instructors')
+    return render(request, 'students/all_instructors.html', {
+        'account': account,
+        'instructors': instructors,
+        'subscribed_instructor_ids': subscribed_instructor_ids
+    })
+
+@login_required
+def subscribed_students(request):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    subscriptions = Subscription.objects.filter(instructor=account).select_related('student__studentprofile').order_by('-subscribed_at')
+    return render(request, 'instructors/subscribed_students.html', {'account': account, 'subscriptions': subscriptions}) 
+
+@login_required
+def send_message(request, student_id):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+        student = Account.objects.get(id=student_id, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(
+                sender=account,
+                recipient=student,
+                content=content
+            )
+            return redirect('subscribed_students')
+    return render(request, 'instructors/send_message.html', {'account': account, 'student': student})
+
+@login_required
+def student_messages(request):
+    try:
+        account = Account.objects.get(user=request.user, role='student')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    messagess = Message.objects.filter(recipient=account).select_related('sender__instructorprofile')
+    if request.method == 'POST':
+        message_id = request.POST.get('message_id')
+        reply_content = request.POST.get('reply_content')
+        if message_id and reply_content:
+            message = Message.objects.get(id=message_id, recipient=account, reply__isnull=True)
+            Message.objects.create(
+                sender=account,
+                recipient=message.sender,
+                content=reply_content,
+                is_reply=True,
+                replied_at=timezone.now()
+            )
+            message.reply = reply_content
+            message.replied_at = timezone.now()
+            message.save()
+            return redirect('student_messages')
+    return render(request, 'students/messages.html', {'account': account, 'messagess': messagess})
+
+@login_required
+def instructor_messages(request):
+    try:
+        account = Account.objects.get(user=request.user, role='instructor')
+    except ObjectDoesNotExist:
+        return redirect('home')
+
+    messages = Message.objects.filter(Q(sender=account) | Q(recipient=account)).select_related('sender__instructorprofile', 'recipient__studentprofile').order_by('-sent_at')
+    return render(request, 'instructors/messages.html', {'account': account, 'messages': messages})

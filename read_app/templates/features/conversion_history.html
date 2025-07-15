@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-history"></i></span>
+                Conversion History
+            </p>
+            <a class="card-header-icon" href="{% url 'conversion_history' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Converted At</th>
+                        <th>Original Content</th>
+                        <th>Converted Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                    <tr>
+                        <td data-label="Type">{{ entry.type|title }}</td>
+                        <td data-label="Converted At">
+                            <small class="text-gray-500" title="{{ entry.converted_at }}">{{ entry.converted_at|date:"M d, Y H:i" }}</small>
+                        </td>
+                        <td data-label="Original Content">
+                            {% if entry.type == 'pdf' and entry.original_content %}
+                                <a href="{{ entry.original_content.url }}" class="button small blue" download>
+                                    <span class="icon"><i class="mdi mdi-download"></i></span>
+                                    Download Original
+                                </a>
+                            {% elif entry.type == 'text' and entry.original_text %}
+                                <span>{{ entry.original_text|truncatechars:50 }}</span>
+                            {% else %}
+                                <span>N/A</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Converted Content">
+                            {% if entry.type == 'pdf' and entry.converted_content %}
+                                <a href="{{ entry.converted_content.url }}" class="button small green" download>
+                                    <span class="icon"><i class="mdi mdi-download"></i></span>
+                                    Download Converted
+                                </a>
+                            {% elif entry.type == 'text' and entry.converted_text %}
+                                <span>{{ entry.converted_text|truncatechars:50 }}</span>
+                            {% else %}
+                                <span>N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No conversion history available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

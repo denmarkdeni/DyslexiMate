@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-account-multiple"></i></span>
+                All Instructors
+            </p>
+            <a class="card-header-icon" href="{% url 'all_instructors' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Qualification</th>
+                        <th>Specialization</th>
+                        <th>Experience</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instructor in instructors %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ instructor.profile_picture.url }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Name">{{ instructor.instructorprofile.name|default:"N/A" }}</td>
+                        <td data-label="Username">{{ instructor.user.username }}</td>
+                        <td data-label="Qualification">{{ instructor.instructorprofile.qualification|default:"N/A" }}</td>
+                        <td data-label="Specialization">{{ instructor.instructorprofile.specialization|default:"N/A" }}</td>
+                        <td data-label="Years of Experience">{{ instructor.instructorprofile.years_of_experience|default:"N/A" }} Years</td>
+                        <td class="actions-cell">
+                            <div class="buttons nowrap">
+                                {% if instructor.id not in subscribed_instructor_ids %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="instructor_id" value="{{ instructor.id }}">
+                                    <input type="hidden" name="action" value="subscribe">
+                                    <button class="button small green" type="submit">
+                                        <span class="icon"><i class="mdi mdi-account-plus"></i></span>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-green">Subscribed</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No instructors available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="field grouped mt-4">
+                <div class="control">
+                    <a href="{% url 'subscribed_instructors' %}" class="button blue">My Subscribed Instructors</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

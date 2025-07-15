@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section main-section">
+    <div class="card has-table">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-message"></i></span>
+                My Messages
+            </p>
+            <a class="card-header-icon" href="{% url 'student_messages' %}">
+                <span class="icon"><i class="mdi mdi-reload"></i></span>
+            </a>
+        </header>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Sender</th>
+                        <th>Message</th>
+                        <th>Sent At</th>
+                        <th>Reply</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messagess %}
+                    <tr>
+                        <td class="image-cell">
+                            <div class="image">
+                                <img src="{{ message.sender.profile_picture.url }}" class="rounded-full">
+                            </div>
+                        </td>
+                        <td data-label="Sender">{{ message.sender.instructorprofile.name|default:message.sender.user.username }}</td>
+                        <td data-label="Message">{{ message.content }}</td>
+                        <td data-label="Sent At">
+                            <small class="text-gray-500" title="{{ message.sent_at }}">{{ message.sent_at|date:"M d, Y H:i" }}</small>
+                        </td>
+                        <td data-label="Reply">{{ message.reply|default:"No reply yet" }}</td>
+                        <td class="actions-cell">
+                            <div class="buttons right nowrap">
+                                {% if not message.reply %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="message_id" value="{{ message.id }}">
+                                    <div class="field">
+                                        <div class="control">
+                                            <textarea class="textarea" name="reply_content" placeholder="Enter your reply" required></textarea>
+                                        </div>
+                                    </div>
+                                    <button class="button small green" type="submit">
+                                        <span class="icon"><i class="mdi mdi-reply"></i></span>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-green">Replied</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No messages received.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
